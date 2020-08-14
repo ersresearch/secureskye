@@ -1,0 +1,15 @@
+
+.card.hover-zoom-effect i.fa {
+    moz-transition: all 0.3s ease;
+    -o-transition: all 0.3s ease;
+    -webkit-transition: all 0.3s ease;
+    transition: all 0.3s ease;  
+}
+.card.hover-zoom-effect:hover i.fa {
+    opacity: 0.4;
+    -moz-transform: rotate(-32deg) scale(1.4);
+    -ms-transform: rotate(-32deg) scale(1.4);
+    -o-transform: rotate(-32deg) scale(1.4);
+    -webkit-transform: rotate(-32deg) scale(1.4);
+    transform: rotate(-32deg) scale(1.4);
+}

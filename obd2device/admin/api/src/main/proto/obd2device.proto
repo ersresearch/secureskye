@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package obd2device.admin;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.obd2device.admin.api.proto";
+option java_outer_classname = "Proto";
+
+message Obd2DeviceProto {
+    string id = 1;
+    string family = 2;
+    string kernel = 3;
+    string mac_address = 4;
+    string vehicle_id = 5;
+}
+
+message RegisteredObd2DeviceProto {
+    Obd2DeviceProto device = 1;
+    string client_id = 2;
+}
+
+message Obd2DeviceListProto {
+    repeated Obd2DeviceProto data = 1;
+}

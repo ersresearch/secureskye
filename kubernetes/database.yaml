@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cassandra
+  labels:
+    app: cassandra
+    tier: backend
+spec:
+  ports:
+  - port: 9042
+    targetPort: 9042
+  selector:
+    app: cassandra
+    tier: backend
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: cassandra
+spec:
+  selector:
+    matchLabels:
+      app: cassandra
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cassandra
+        tier: backend
+    spec:
+      containers:
+      - name: cassandra
+        image: scylladb/scylla:2.0.1
+        resources:
+          requests:
+#            cpu: 0.2
+#            memory: 1Gi
+        ports:
+        - containerPort: 9042
+        volumeMounts:
+        - name: cassandra-storage
+          mountPath: /var/lib/scylla
+      volumes:
+#      - name: cassandra-storage
+#        persistentVolumeClaim:
+#          claimName: cassandra-pvc
+      - name: cassandra-storage
+        gcePersistentDisk:
+          pdName: cassandra-disk
+          fsType: ext4
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+    tier: backend
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: postgres
+    tier: backend
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+      tier: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+        tier: backend
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:10-alpine
+        resources:
+          requests:
+#            cpu: 0.2
+#            memory: 200Mi
+        env:
+        - name: POSTGRES_PASSWORD
+          value: postgres
+        - name: POSTGRES_DB
+          value: secureskye
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql
+      volumes:
+#      - name: postgres-storage
+#        persistentVolumeClaim:
+#          claimName: postgres-pvc
+      - name: postgres-storage
+        gcePersistentDisk:
+          pdName: postgres-disk
+          fsType: ext4

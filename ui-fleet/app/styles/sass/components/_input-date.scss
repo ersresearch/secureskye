@@ -1,0 +1,15 @@
+input[type='date'] {
+  background: #fff
+    url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA5UlEQVQ4T+3RMUqDQRCG4SeC17D2CDZByAkMKCZgkcLWQgI2OYGFCNp4Aw0RtEwfCB7BOtjaiQgmKCOz8vsTrQQbpxl2vpl3d79p+BpXaGC3Vi/HW7ygUwrRfJ2HUxwk4AyHNcgxBgk4L3oA3rKxi60E3OCyBmijl4B4yYdeBWxjkbWVyssKJwCrmONTrwKGuM/u9SU+LNWrgG98+7lcABPM0MIz7nKsmTn0iE28Yoo1NAtgJ/88xgP2c6BsKPyJCPOesIeojQrgJG+NNT3iIgf6mUOPOMotxJo30P81D/6/wN9t4R0ybVSvIKVAUwAAAABJRU5ErkJggg==)
+    97% 50% no-repeat;
+}
+input[type='date']::-webkit-inner-spin-button {
+  display: none;
+}
+input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
+input::-webkit-clear-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

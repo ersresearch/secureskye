@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package licensing.main;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.licensing.main.api.proto";
+option java_outer_classname = "Proto";

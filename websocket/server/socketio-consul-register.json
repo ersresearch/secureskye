@@ -1,0 +1,17 @@
+{
+    "ID": "socketio-$HOSTNAME",
+    "Name": "socketio",
+    "Address": "$HOSTIP",
+    "Port": $SERVER_PORT,
+    "Tags": [
+        "traefik.frontend.rule=PathPrefix:/socketio"
+    ],
+    "check": {
+        "name": "Service 'socketio' check",
+        "http": "http://$HOSTIP:$SERVER_PORT/health-check",
+        "tls_skip_verify": false,
+        "interval": "10s",
+        "timeout": "1s",
+        "deregister_critical_service_after": "5m"
+    }
+}

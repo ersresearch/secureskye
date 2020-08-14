@@ -1,0 +1,10 @@
+import { createAsyncTypes } from 'utils/actionUtils';
+const PREFIX = 'OTA_PACKAGE_';
+
+export const actionTypes = {
+  GET_ALL_OTA_PACKAGE: createAsyncTypes(`${PREFIX}GET_ALL_OTA_PACKAGE`),
+  HANDLE_DELETE_OTA: createAsyncTypes(`${PREFIX}HANDLE_DELETE_OTA`),
+  HANDLE_STATUS_CHECK_LIST: `${PREFIX}HANDLE_STATUS_CHECK_LIST`,
+  HANDLE_STATUS_DIALOG: `${PREFIX}HANDLE_STATUS_DIALOG`,
+  HANDLE_SELECT_ROW_ID: `${PREFIX}HANDLE_SELECT_ROW_ID`,
+};

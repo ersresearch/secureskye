@@ -1,0 +1,327 @@
+/*
+ * @Author: LoiDT2 
+ * @Date: 2018-11-13 09:23:18 
+ * @Last Modified by: NhuHH
+ * @Last Modified time: 2018-12-18 13:26:23
+ */
+ .root {
+   height: 90%;
+ }
+.wrapper {
+  background: #575757;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+.tree {
+  list-style-type: none;
+  font-size: 22px;
+  @media (max-height: 719px), (max-width: 1279px) {
+    font-size: 13px;
+  }
+  @media (min-height: 720px) and (max-height: 944px),
+    (min-width: 1280px) and (max-width: 1679px) {
+    font-size: 13px;
+  }
+  @media (min-height: 945px) and (max-height: 1079px),
+    (min-width: 1680px) and (max-width: 1919px) {
+    font-size: 18px;
+  }
+}
+.tree_label_root {
+  position: relative;
+  display: inline-block;
+  color: white;
+}
+label.tree_label_root:before {
+  background: #000;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+  float: left;
+  margin: 0 1em 0 -2em;
+  width: 1em;
+  height: 1em;
+  border-radius: 1em;
+  content: '+';
+  text-align: center;
+  line-height: 0.9em;
+}
+.tree input {
+  position: absolute;
+  clip: rect(0, 0, 0, 0);
+}
+
+.tree input ~ ul {
+  display: none;
+}
+
+.tree input:checked ~ ul {
+  display: block;
+}
+
+.tree li {
+  list-style-type: none;
+  line-height: 1.2;
+  position: relative;
+  padding: 0 0 1em 1em;
+}
+
+.tree ul li {
+  padding: 1em 0 0 1em;
+  @media (max-height: 719px), (max-width: 1279px) {
+    padding: 1em 0 0 0;
+  }
+  @media (min-height: 720px) and (max-height: 944px),
+    (min-width: 1280px) and (max-width: 1679px) {
+    padding: 1em 0 0 0;
+  }
+  @media (min-height: 945px) and (max-height: 1079px),
+    (min-width: 1680px) and (max-width: 1919px) {
+    padding: 1em 0 0 1em;
+  }
+}
+
+.tree > li:last-child {
+  padding-bottom: 0;
+}
+
+.tree_label {
+  position: relative;
+  display: inline-block;
+  color: white;
+}
+.tree_label_lv1 {
+  position: relative;
+  display: inline-block;
+  color: white;
+}
+
+label.tree_label {
+  cursor: pointer;
+}
+
+label.tree_label:before {
+  background: #000;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+  float: left;
+  margin: 0 1em 0 -2em;
+  width: 1em;
+  height: 1em;
+  border-radius: 1em;
+  content: '+';
+  text-align: center;
+  line-height: 0.9em;
+}
+label.tree_label_lv1:before {
+  background: #000;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+  float: left;
+  margin: 0 1em 0 -2em;
+  width: 1em;
+  height: 1em;
+  border-radius: 1em;
+  content: '+';
+  text-align: center;
+  line-height: 0.9em;
+}
+// .tree_label_root:after {
+//   position: absolute;
+//   top: 0;
+//   left: -1.5em;
+//   display: block;
+//   height: 0.5em;
+//   width: 1em;
+//   border-bottom: 1px solid #777;
+//   border-left: 1px solid #777;
+//   border-radius: 0 0 0 .3em;
+//   content: '';
+// }
+:checked ~ label.tree_label_root:before {
+  content: '–';
+}
+:checked ~ label.tree_label:before {
+  content: '–';
+}
+:checked ~ label.tree_label_lv1:before {
+  content: '–';
+}
+.tree_children .parentNode:after {
+  margin-left: 0;
+  @media (max-height: 719px), (max-width: 1279px) {
+    margin-left: -1em;
+  }
+  @media (min-height: 720px) and (max-height: 944px),
+    (min-width: 1280px) and (max-width: 1679px) {
+    margin-left: -1em;
+  }
+  @media (min-height: 945px) and (max-height: 1079px),
+    (min-width: 1680px) and (max-width: 1919px) {
+    margin-left: 0;
+  }
+  position: absolute;
+  top: -0.2em;
+  bottom: 0;
+  left: -0.5em;
+  display: block;
+  width: 0;
+  border-left: 1px solid white;
+  content: '';
+}
+.tree_children:last-child .parentNode:after {
+  position: absolute;
+  display: block;
+  height: 2.2em;
+  border-left: 1px solid white;
+  content: '';
+}
+
+.tree_label:after {
+  position: absolute;
+  top: -1em;
+  left: -1.5em;
+  display: block;
+  height: 2.4em;
+  width: 1em;
+  border-bottom: 1px solid white;
+  border-left: 1px solid white;
+  content: '';
+}
+
+label.tree_label:after {
+  border-bottom: 0;
+}
+label.tree_label_root:after {
+  border-bottom: 0;
+  border-left: 0;
+}
+.tree_label_root:after {
+  position: absolute;
+  top: -1em;
+  left: -1.5em;
+  display: block;
+  height: 2.4em;
+  width: 1em;
+  border-bottom: 1px solid white;
+  border-left: 1px solid white;
+  content: '';
+}
+:checked ~ label.tree_label_root:after {
+  border-top: 1px solid white;
+  border-bottom: 0;
+  border-left: 0;
+  bottom: 0;
+  top: 0.5em;
+  height: auto;
+}
+label.tree_label_root:after {
+  border-bottom: 0;
+  border-left: 0;
+}
+.tree_label_lv1:after {
+  position: absolute;
+  top: -1em;
+  left: -1.5em;
+  width: 1em;
+  content: '';
+}
+:checked ~ label.tree_label_lv1:after {
+  border-top: 1px solid white;
+  border-bottom: 0;
+  border-left: 0;
+  bottom: 0;
+  top: 0.5em;
+  height: auto;
+}
+label.lv1:after {
+  border-bottom: 0;
+  border-left: 0;
+}
+:checked ~ label.tree_label:after {
+  border-top: 1px solid white;
+  border-bottom: 0;
+  border-left: 0;
+  bottom: 0;
+  top: 0.5em;
+  height: auto;
+}
+.tree li::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  @media (max-height: 719px), (max-width: 1279px) {
+    left: -1.5em;
+  }
+  @media (min-height: 720px) and (max-height: 944px),
+    (min-width: 1280px) and (max-width: 1679px) {
+    left: -1.5em;
+  }
+  @media (min-height: 945px) and (max-height: 1079px),
+    (min-width: 1680px) and (max-width: 1919px) {
+    left: -0.5em;
+  }
+  left: -0.5em;
+  display: block;
+  width: 0;
+  border-left: 1px solid white;
+  content: '';
+}
+.tree li:last-child:before {
+  height: 1em;
+  bottom: auto;
+}
+.tree > li:last-child:before {
+  display: none;
+}
+
+.alert_node {
+  background-color: #a08f32;
+  text-align: center;
+}
+.critical_node {
+  background-color: #a02f3b;
+  text-align: center;
+}
+.info_node {
+  background-color: #42899b;
+  text-align: center;
+}
+.txtCheckData {
+  color: white;
+  text-align: center;
+  padding-top: 100%;
+  font-size: 20px;
+}
+.button {
+  cursor: pointer;
+  text-align: left;
+  width: 231px;
+  word-wrap: break-word;
+  outline: none;
+  margin-top: 0.7em;
+  &:focus {
+    font-weight: bold;
+  }
+  @media (max-height: 719px), (max-width: 1279px) {
+    width: 142px;
+  }
+  @media (min-height: 720px) and (max-height: 944px),
+    (min-width: 1280px) and (max-width: 1679px) {
+      width: 142px;
+  }
+  @media (min-height: 945px) and (max-height: 1079px),
+    (min-width: 1680px) and (max-width: 1919px) {
+      width: 192px;
+  }
+}
+.button_lv1 {
+  cursor: pointer;
+  outline: none;
+  &:focus {
+    font-weight: bold;
+  }
+}

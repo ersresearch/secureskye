@@ -1,0 +1,10 @@
+
+${AnsiColor.BRIGHT_WHITE}  ____                                ${AnsiColor.BRIGHT_BLUE} ____   _  ____   __ _____
+${AnsiColor.BRIGHT_WHITE} / ___|   ___   ___  _   _  _ __  ___ ${AnsiColor.BRIGHT_BLUE}/ ___| | |/ /\ \ / /| ____|
+${AnsiColor.BRIGHT_WHITE} \___ \  / _ \ / __|| | | || '__|/ _ \${AnsiColor.BRIGHT_BLUE}\___ \ | ' /  \ V / |  _|
+${AnsiColor.BRIGHT_WHITE}  ___) ||  __/| (__ | |_| || |  |  __/${AnsiColor.BRIGHT_BLUE} ___) || . \   | |  | |___
+${AnsiColor.BRIGHT_WHITE} |____/  \___| \___| \__,_||_|   \___|${AnsiColor.BRIGHT_BLUE}|____/ |_|\_\  |_|  |_____|
+
+${AnsiColor.GREEN}${AnsiStyle.BOLD}
+${application.title}${AnsiStyle.NORMAL}${AnsiStyle.FAINT}${application.formatted-version}
+${AnsiColor.DEFAULT}${AnsiStyle.NORMAL}

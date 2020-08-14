@@ -1,0 +1,91 @@
+image: gradle:5.0.0-jdk8
+
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=true -Dorg.gradle.parallel=true -Dorg.gradle.jvmargs=-Xmx2048m"
+
+before_script:
+  - export GRADLE_USER_HOME=`pwd`/.gradle-home
+
+stages:
+  - setup
+  - verify
+  - build
+  - test
+
+cache:
+  key: "$CI_COMMIT_REF_NAME"
+  paths:
+    - .gradle/5.0
+    - .gradle-home/caches/5.0
+    - .gradle-home/caches/build-cache-1
+    - .gradle-home/caches/jars-3
+    - buildSrc/.gradle
+    - buildSrc/build
+
+detekt:
+  stage: verify
+  tags:
+    - docker
+  script: gradle -I init.gradle.kts clean detekt
+  cache:
+    key: "$CI_PROJECT_PATH_SLUG-detekt"
+    paths:
+      - .gradle/5.0
+      - .gradle-home/caches/5.0
+      - .gradle-home/caches/jars-3
+      - .gradle-home/caches/modules-2
+      - buildSrc/.gradle
+      - buildSrc/build
+
+spotless:
+  stage: verify
+  tags:
+    - docker
+  script: gradle -I init.gradle.kts clean spotlessCheck
+  cache:
+    key: "$CI_PROJECT_PATH_SLUG-spotless"
+    paths:
+      - .gradle/5.0
+      - .gradle-home/caches/5.0
+      - .gradle-home/caches/jars-3
+      - .gradle-home/caches/modules-2
+      - buildSrc/.gradle
+      - buildSrc/build
+
+commitlint:
+  stage: verify
+  tags:
+    - docker
+  only:
+    - /^feature\/.*$/
+    - /^bugfix\/.*$/
+    - /^release\/.*$/
+  image: node:10
+  script: npm ci && npx commitlint --from origin/develop --to $CI_COMMIT_SHA
+  cache:
+    key: "$CI_PROJECT_PATH_SLUG-commitlint"
+    paths:
+      - node_modules
+
+prototool:
+  stage: verify
+  tags:
+    - docker
+  image:
+    name: lockblox/prototool
+    entrypoint: [""]
+  script: prototool lint
+  cache: {}
+
+build:
+  stage: build
+  tags:
+    - docker
+  script: gradle -I init.gradle.kts assemble
+
+test:
+  stage: test
+  tags:
+    - docker
+  script: gradle -I init.gradle.kts test
+

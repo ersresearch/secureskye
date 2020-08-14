@@ -1,0 +1,47 @@
+= Web Socket Server's How-Tos
+tac.vonglong <tacvl@fsoft.com.vn>
+v0.5.0.M1, 2018/08/10
+:toc:
+:homepage: https://trilliumsecure.com
+:icons: font
+:source-highlighter: pygments
+
+
+See <<../README.adoc#websocket>>
+
+== Socket IO Client
+=== Dependency
+.build.gradle
+[source,groovy]
+----
+implementation project(':websocket-client')
+----
+
+=== Configuration
+.application.yml
+[source,yaml]
+----
+socketio:
+  service-id: socketio
+----
+[NOTE]
+====
+Host and Port is of the web socket
+====
+=== Enable component scanning
+.XXXApplication.kt
+[source,kotlin]
+----
+@SpringBootApplication(scanBasePackageClasses = [WebsocketModule::class])
+----
+
+=== Coding sample
+Invoke method sends a message to WebSocket
+[source,kotlin]
+----
+private val webSocketService: WebSocketService
+----
+----
+val response = WebSocketReponse(Date(), "Vehicle tracking", Vehicle(), WebSocketReponseLevel.INFO)
+webSocketService.sendMessage("vehicleTracking", "11T-111111", response)
+----

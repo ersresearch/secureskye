@@ -1,0 +1,59 @@
+<ng-progress></ng-progress>
+<app-header [fixed]="true" [navbarBrandFull]="{src: 'assets/img/logo.png', width: 145, height: 26, alt: 'Trillium Logo'}"
+  [navbarBrandMinimized]="{src: 'assets/img/logo-symbol.png', width: 30, height: 30, alt: 'Trillium Logo'}" [sidebarToggler]="'lg'"
+  [asideMenuToggler]="false" [mobileAsideMenuToggler]="false">
+  <ul class="nav navbar-nav d-md-down-none">
+    <li class="nav-item px-3">
+      <a class="nav-link" [routerLink]="['/ota']">SecureOTA</a>
+    </li>
+    <li class="nav-item px-3">
+      <a class="nav-link" [routerLink]="['/ixs']">SecureIXS</a>
+    </li>
+  </ul>
+  <ul class="nav navbar-nav ml-auto">
+    <li *ngIf="!user" class="nav-item px-3">
+      <a class="nav-link" [routerLink]="['/login']">Login</a>
+    </li>
+    <li *ngIf="user" class="nav-item dropdown mr-2" dropdown placement="bottom right">
+      <button type="button" class="nav-link" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" dropdownToggle>
+        <span class="d-md-down-none mr-1">{{user.name}}</span>
+        <ngx-avatar #avatar [facebookId]="avatar3rdPartyMap['facebook']" [googleId]="avatar3rdPartyMap['google']" [twitterId]="avatar3rdPartyMap['twitter']"
+          [vkontakteId]="avatar3rdPartyMap['vkontakte']" [githubId]="avatar3rdPartyMap['github']" [name]="avatar3rdPartyMap['initials']"
+          [src]="avatar3rdPartyMap['img']" [round]="true" [bgColor]="'#536c79'" size="35" class="d-inline-block"></ngx-avatar>
+      </button>
+      <div class="dropdown-menu dropdown-menu-right" *dropdownMenu aria-labelledby="simple-dropdown">
+        <div class="dropdown-header text-center">
+          <strong>Settings</strong>
+        </div>
+        <a class="dropdown-item" [routerLink]="['/settings', 'profile']">
+          <i class="fa fa-user"></i> Profile</a>
+        <a class="dropdown-item" [routerLink]="['/settings/', 'profile', 'password']">
+          <i class="fa fa-key"></i> Change password</a>
+        <a class="dropdown-item" [routerLink]="['/login']" [queryParams]="{logout:true}">
+          <i class="fa fa-sign-out"></i> Logout</a>
+      </div>
+    </li>
+  </ul>
+</app-header>
+<div class="app-body">
+  <app-sidebar [fixed]="true" [display]="'lg'">
+    <app-sidebar-nav *ngIf="navItems" [navItems]="navItems" [perfectScrollbar] [disabled]="sidebarMinimized"></app-sidebar-nav>
+    <app-sidebar-minimizer></app-sidebar-minimizer>
+  </app-sidebar>
+  <!-- Main content -->
+  <main class="main">
+    <!-- Breadcrumb -->
+    <app-breadcrumbs></app-breadcrumbs>
+    <div class="container-fluid">
+      <router-outlet></router-outlet>
+    </div>
+    <!-- /.container-fluid -->
+  </main>
+</div>
+<app-footer>
+  <span>&copy;&nbsp;2017 - 2018&nbsp;
+    <a href="http://www.trillium.co.jp/">Trillium Incorporated, Trilliumcyber LLC</a>. All Right Reserved.</span>
+  <span class="ml-auto d-md-down-none">Powered by
+    <a href="http://coreui.io">CoreUI</a>
+  </span>
+</app-footer>

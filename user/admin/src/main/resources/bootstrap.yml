@@ -1,0 +1,10 @@
+#
+# Copyright (C) 2017-2018 Trillium Inc. <support@trilliumsecure.com>
+#
+
+spring:
+  application:
+    name: user-admin
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URL:http://localhost:8888}

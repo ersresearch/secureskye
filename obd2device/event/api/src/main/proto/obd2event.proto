@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package vehicle.message;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.obd2device.event.api.proto";
+option java_outer_classname = "Proto";
+
+message Obd2EventListProto {
+    repeated Obd2EventProto data = 1;
+}
+
+message Obd2EventProto {
+    int64 timestamp = 1;
+    double speed = 2;
+    double fuel = 3;
+    double available_driving_distance = 4;
+    double engine_coolant = 5;
+    int32 rpm = 6;
+    double odometer = 7;
+    double trip_odometer = 8;
+    GearShiftProto gear_shift = 9;
+    LongLatProto gps = 10;
+    double braking_distance = 11;
+    double mpg = 12;
+    repeated MilAlertProto mil = 13;
+}
+
+message TimeSeriesDataProto {
+    repeated SpeedEventProto speed = 1;
+    repeated RpmEventProto rpm = 2;
+}
+
+message SpeedEventProto {
+    int64 timestamp = 1;
+    double value = 2;
+}
+
+message RpmEventProto {
+    int64 timestamp = 1;
+    int32 value = 2;
+}
+
+message LongLatProto {
+    double longitude = 1;
+    double latitude = 2;
+}
+
+message MilAlertProto {
+    ComponentTypeProto type = 1;
+    CriticalLevelProto critical_level = 2;
+    string content = 3;
+}
+
+enum GearShiftProto {
+    UNKNOWN = 0;
+    ONE = 1;
+    TWO = 2;
+    NEUTRAL = 3;
+    DRIVE = 4;
+    REVERSE = 5;
+    PARK = 6;
+}
+
+enum ComponentTypeProto {
+    UNSPECIFIED = 0;
+    ENGINE = 1;
+    TIRE_PRESSURE = 2;
+    ENGINE_OIL = 3;
+    BRAKES = 4;
+    ENGINE_COOLANT = 5;
+    BATTERY = 6;
+}
+
+enum CriticalLevelProto {
+    UNDEFINED = 0;
+    INFO = 1;
+    WARNING = 2;
+    DANGER = 3;
+}
+
+// an set of boolean parameter, hold value of each setting in model's settings
+message DisplaySettingsProto {
+    bool speed = 1; // setting for speed chart
+    bool fuel = 2; // setting for fuel chart
+    bool temperature = 3; // setting for temperature chart
+    bool rpm = 4; // setting for rpm chart
+    bool trip_odometer = 5; // setting for trip odometer chart
+    bool odometer = 6; // setting for odometer chart
+    bool gear = 7; // setting for gear chart
+    bool route = 8; // setting for route on map
+    bool ecu_alert_node = 9; // setting for ecu alert node on map
+    bool speed_graph = 10; // setting for speed time/data graph
+    bool rpm_graph = 11; // setting for rpm time/data graph
+    bool braking_graph = 12; // setting for braking time/data graph
+    bool mpg_graph = 13; // setting for mpg time/data graph
+    bool mil_engine = 14; // setting for MIL engine alert
+    bool mil_tire_pressure = 15; // setting for MIL tire pressure alert
+    bool mil_engine_oil = 16; // setting for MIL engine oil alert
+    bool mil_brakes = 17; // setting for MIL brakes alert
+    bool mil_engine_coolant = 18; // setting for MIL engine coolant alert
+    bool mil_battery = 19; // setting for MIL battery alert
+    bool other = 20; // settings for other display option
+
+}

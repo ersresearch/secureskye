@@ -1,0 +1,2 @@
+# init.sh to have unix linefeed style (LF)
+traefik.toml text eol=lf

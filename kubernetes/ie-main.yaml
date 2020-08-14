@@ -1,0 +1,25 @@
+apiVersion: apps/v1beta1 # for versions before 1.8.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: ie-main
+spec:
+  selector:
+    matchLabels:
+      app: ie-main
+      tier: frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ie-main
+        tier: frontend
+    spec:
+      containers:
+      - name: ie-main
+        image: asia.gcr.io/secure-skye/ie-main:0.4.0.RELEASE
+        resources:
+          requests:
+#            cpu: 1
+#            memory: 1Gi
+        ports:
+        - containerPort: 8080

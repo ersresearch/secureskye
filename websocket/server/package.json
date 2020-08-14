@@ -1,0 +1,17 @@
+{
+  "name": "socket.io",
+  "version": "0.0.1",
+  "description": "SocketIO server for communication",
+  "main": "index.js",
+  "author": "NamNH41",
+  "private": true,
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^4.16.3",
+    "socket.io": "^2.1.1",
+    "socket.io-adapter-mongo": "^2.0.3"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

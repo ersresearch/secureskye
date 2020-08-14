@@ -1,0 +1,4 @@
+[submodule "ui-fleet"]
+	path = ui-fleet
+	url = ../fleet-ui.git
+	branch = develop

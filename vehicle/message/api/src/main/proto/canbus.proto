@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package vehicle.message;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.vehicle.message.api.proto";
+option java_outer_classname = "CanBusProto";
+
+// A raw CAN bus message
+message CanBusMessageProto {
+    int64 timestamp = 1; // Creation time of the message
+    int32 message_id = 2; // Message identifier within the CAN bus
+    bytes data = 3; // Message content
+    int32 dlc = 4; // Length of the data in the message
+}
+
+// Group of different message types
+message MessageBatchProto {
+    TimeRange time_range = 2; // Time range of all events in the batch
+    repeated CanBusMessageProto can_bus = 1; // Collection of CAN bus messages
+
+    // The time range of a list of events
+    message TimeRange {
+        int64 since = 1; // Time of the oldest entry
+        int64 until = 2; // Time of the newest entry
+    }
+}

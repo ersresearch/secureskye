@@ -1,0 +1,100 @@
+/*
+ * Copyright (C) 2017-2018 Trillium Inc. <support@trilliumsecure.com>
+ */
+package jp.co.trillium.secureskye.vehicle.registry
+
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import com.nhaarman.mockitokotlin2.verifyZeroInteractions
+import com.nhaarman.mockitokotlin2.whenever
+import jp.co.trillium.secureskye.vehicle.admin.api.proto.VehicleListProto
+import jp.co.trillium.secureskye.vehicle.admin.api.proto.VehicleProto
+import jp.co.trillium.secureskye.vehicle.registry.feign.VehicleAdminClient
+import jp.co.trillium.secureskye.vehicle.registry.model.GatewayInfo
+import jp.co.trillium.secureskye.vehicle.registry.repository.GatewayInfoRepository
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.context.annotation.Bean
+import org.springframework.test.context.junit.jupiter.SpringExtension
+import java.util.UUID
+
+@ExtendWith(SpringExtension::class)
+class GatewayInfoServiceTest {
+
+    @TestConfiguration
+    class TestContextConfiguration {
+        @Bean
+        fun initialDataRunner(
+            gatewayInfoRepository: GatewayInfoRepository,
+            vehicleAdminClient: VehicleAdminClient
+        ) =
+            InitialDataRunner(
+                gatewayInfoRepository,
+                vehicleAdminClient
+            )
+    }
+
+    @Autowired
+    private lateinit var initialDataRunner: InitialDataRunner
+
+    @MockBean
+    private lateinit var gatewayInfoRepository: GatewayInfoRepository
+
+    @MockBean
+    private lateinit var vehicleAdminClient: VehicleAdminClient
+
+    @Test
+    fun `Runner skips initialization if vehicle-admin returns no vehicles`() {
+        whenever(vehicleAdminClient.getAllVehicles()).thenReturn(
+            VehicleListProto.getDefaultInstance()
+        )
+
+        initialDataRunner.run()
+
+        verify(vehicleAdminClient, times(1)).getAllVehicles()
+        verifyZeroInteractions(gatewayInfoRepository)
+    }
+
+    @Test
+    fun `Runner skips initialization if repository is not empty`() {
+        whenever(vehicleAdminClient.getAllVehicles()).thenReturn(
+            VehicleListProto.newBuilder()
+                .addData(
+                    VehicleProto.newBuilder()
+                        .setId(UUID.randomUUID().toString())
+                )
+                .build()
+        )
+        whenever(gatewayInfoRepository.count()).thenReturn(1)
+
+        initialDataRunner.run()
+
+        verify(vehicleAdminClient, times(1)).getAllVehicles()
+        verify(gatewayInfoRepository, times(1)).count()
+        verifyNoMoreInteractions(gatewayInfoRepository)
+    }
+
+    @Test
+    fun `Runner saves initial gateway information if the repository is empty`() {
+        whenever(vehicleAdminClient.getAllVehicles()).thenReturn(
+            VehicleListProto.newBuilder()
+                .addData(
+                    VehicleProto.newBuilder()
+                        .setId(UUID.randomUUID().toString())
+                )
+                .build()
+        )
+
+        initialDataRunner.run()
+
+        verify(vehicleAdminClient, times(1)).getAllVehicles()
+        verify(gatewayInfoRepository, times(1)).count()
+        verify(gatewayInfoRepository, times(1)).save(any<GatewayInfo>())
+        verifyNoMoreInteractions(vehicleAdminClient, gatewayInfoRepository)
+    }
+}

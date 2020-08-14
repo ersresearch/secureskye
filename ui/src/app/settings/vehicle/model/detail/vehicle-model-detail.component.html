@@ -1,0 +1,79 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card" *ngIf="vehicleModel">
+        <div class="card-body">
+          <h3 class="card-title mb-0" *ngIf="vehicleModel.id">Model
+            <small class="text-muted small text-uppercase">{{vehicleModel.name}}</small>
+          </h3>
+          <h3 class="card-title mb-0" *ngIf="!vehicleModel.id">Model Register
+          </h3>
+          <hr>
+          <div class="row justify-content-sm-center">
+            <div class="col-md-10" *ngIf="vehicleModelForm" [formGroup]="vehicleModelForm">
+              <div class="form-group row">
+                <label for="model-name" class="col-sm-5 col-md-4 col-form-label">Model name</label>
+                <div class="col-sm-7 col-md-8">
+                  <input type="text" formControlName="name" class="form-control" id="model-name" [ngClass]="fieldValidationClass('name')">
+                  <div class="invalid-feedback" *ngIf="fieldValidationError('name', 'required')">Model name required!</div>
+                </div>
+              </div>
+              <div class="form-group row" *ngIf="vehicleModelId">
+                <label for="model-2fa" class="col-9 col-sm-5 col-md-4 col-form-label">2-Factor Authentication</label>
+                <div class="col-3 col-sm-7 col-md-8">
+                  <div class="form-control-plaintext">
+                    <label class="switch switch-default switch-success switch-pill mb-0 float-right float-sm-left">
+                      <input type="checkbox" formControlName="vehicle2Fa" class="switch-input">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="row" *ngIf="vehicleModelId">
+                <div class="col-12">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead class="thead-dark">
+                        <tr>
+                          <th scope="col">Vehicle</th>
+                          <th scope="col">Status</th>
+                          <th scope="col">Secret</th>
+                          <th scope="col" class="d-none d-md-table-cell">Scratch codes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let vehicle of vehicleModel.vehicle2Fa">
+                          <th scope="row">{{vehicle.vehicleName}}</th>
+                          <td>
+                            <span class="badge badge-secondary text-uppercase" *ngIf="vehicle.status == 0">DISABLED</span>
+                            <span class="badge badge-success text-uppercase" *ngIf="vehicle.status == 1">ACTIVE</span>
+                            <span class="badge badge-secondary text-uppercase" *ngIf="vehicle.status == 2">INACTIVE</span>
+                          </td>
+                          <td>
+                            <span class="text-light bg-dark p-1 ptr-cursor" *ngIf="!vehicle['showSecret'] && vehicle.oauthTotp.secret" (click)="vehicle['showSecret'] = true">
+                              <i>Show me</i>
+                            </span>
+                            <span class="text-light bg-dark p-1 text-center" *ngIf="vehicle['showSecret'] && vehicle.oauthTotp.secret">{{vehicle.oauthTotp.secret}}</span>
+                          </td>
+                          <td class="d-none d-md-table-cell">
+                            <span *ngIf="vehicle.oauthTotp.secret">{{vehicle.oauthTotp.recoveryCode1}} - {{vehicle.oauthTotp.recoveryCode2}} - {{vehicle.oauthTotp.recoveryCode3}}
+                              - {{vehicle.oauthTotp.recoveryCode4}} - {{vehicle.oauthTotp.recoveryCode5}}</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer" *ngIf="vehicleModelForm">
+          <button type="button" class="btn btn-success group-fix" *ngIf="!vehicleModel.id" (click)="registerVehicleModel()">Register</button>
+          <button type="button" class="btn btn-success group-fix" *ngIf="vehicleModel.id" (click)="updateVehicleModel()">Update</button>
+          <button type="button" class="btn btn-danger group-fix" *ngIf="vehicleModel.id" (click)="showConfirmDialog()">Remove</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

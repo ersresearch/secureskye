@@ -1,0 +1,404 @@
+= SecureSKYE backend
+Mai Do Thanh Nhan <nhanmdt@fsoft.com.vn>
+:toc: left
+:icons: font
+
+== Deploy with docker-compose
+
+=== Get into server
+[source]
+----
+ssh nhanmdt@10.88.14.181
+----
+
+=== Build
+[source]
+----
+git clone https://git3.fsoft.com.vn/fsoft/FGA.DTI.TRILLIUM.BACKEND.git
+cd FGA.DTI.TRILLIUM.BACKEND
+./gradlew -I init.gradle buildDocker
+----
+
+=== Deploy
+
+[source]
+----
+cd /home/nhanmdt
+docker-compose up -d
+----
+
+== Services
+
+=== API Gateway
+Dashboard: http://10.88.14.181:8080
+
+=== Service Discovery
+Dashboard: http://10.88.14.181:8500
+
+=== Portainer
+Dashboard: http://10.88.14.181:9000
+
+=== Database
+[options="header"]
+|===
+|DB|Port|Info
+|postgres|5432|username: postgres +
+password: postgres +
+db: secureskye
+|mongodb|27017|username: mongodb +
+password: mongodb
+|===
+
+=== uaa (User Account & Authentication)
+==== Port
+11000
+
+==== Endpoints
+TBA
+
+=== saa (Service Account & Authentication)
+==== Port
+11010
+
+==== Endpoints
+TBA
+
+=== vehicle-admin
+==== Port
+11020
+
+==== Endpoints
+- vehicle-admin +
+Vehicle administration operations
+
+
+GET
+/vehicles
+
+POST
+/vehicles
+
+GET
+/vehicles/{id}
+
+DELETE
+/vehicles/{id}
+
+PUT
+/vehicles/{id}/rename
+
+GET
+/vehicles/{id}/2fa
+
+POST
+/vehicles/{id}/2fa
+
+PUT
+/vehicles/{id}/2fa
+
+DELETE
+/vehicles/{id}/2fa
+
+GET
+/vehicles/models
+
+POST
+/vehicles/models
+
+GET
+/vehicles/models/{id}
+
+PUT
+/vehicles/models/{id}
+
+DELETE
+/vehicles/models/{id}
+
+GET
+/vehicles/models/{id}/tfa
+
+PUT
+/vehicles/models/{id}/tfa
+
+DELETE
+/vehicles/models/{id}/tfa
+
+GET
+/vehicles/statistics
+
+GET
+/internal/vehicles/{id}
+
+
+=== vehicle-message
+==== Port
+11030
+
+==== Endpoints
+- vehicle-message +
+Operations about storing messages and events for vehicles
+
+
+POST
+/vehicles/events
+
+GET
+/vehicles/{id}/events
+
+POST
+/vehicles/messages
+
+GET
+/vehicles/{id}/messages
+
+GET
+/vehicles/{id}/routes
+
+POST
+/vehicles/{id}/routes
+
+GET
+/routes/{id}
+
+DELETE
+/routes/{id}
+
+PUT
+/routes/{id}/finish
+
+PUT
+/routes/{id}/rename
+
+
+=== vehicle-registry
+==== Port
+11040
+
+==== Endpoints
+- vehicle-registry +
+Operations about self information registration for vehicles
+
+
+POST
+/vehicles/ecus
+
+GET
+/vehicles/ecus
+
+PUT
+/vehicles/ecus/{id}
+
+GET
+/vehicles/ecus/{id}
+
+DELETE
+/vehicles/ecus/{id}
+
+POST
+/vehicles/gateways
+
+GET
+/vehicles/gateways
+
+PUT
+/vehicles/gateways/{id}
+
+GET
+/vehicles/gateways/{id}
+
+DELETE
+/vehicles/gateways/{id}
+
+GET
+/vehicles/{id}/ecus
+
+GET
+/vehicles/{id}/ecus/{ecuId}
+
+GET
+/vehicles/{id}/gateways
+
+GET
+/vehicles{id}/gateways/{gatewayId}
+
+=== ixs-main
+==== Port
+11050
+
+==== Endpoints
+TBA
+
+=== ie-main
+==== Port
+11060
+
+==== Endpoints
+- ie-main +
+Import/Export operations
+
+GET
+/ie/exports
+
+GET
+/ie/exports/direct
+
+GET
+/ie/exports/{id}
+
+POST
+/ie/imports
+
+=== ota-vehicle
+==== Port
+11070
+
+==== Endpoints
+- ota-vehicle +
+Operations about OTA (Over The Air) updates for vehicles
+
+
+POST
+/ota
+
+PUT
+/ota/{id}/publish
+
+GET
+/ota/images/{id}
+
+GET
+/ota/metadata
+
+GET
+/ota/metadata/{id}
+
+DELETE
+/ota/metadata/{id}
+
+GET
+/ota/statistics
+
+
+=== notification-main
+==== Port
+11080
+
+==== Endpoints
+- notification-main +
+User notification operations
+
+
+POST
+/notifications
+
+GET
+/notifications/subscriptions
+
+GET
+/notifications/subscriptions/{channel}
+
+POST
+/notifications/subscriptions/{channel}
+
+DELETE
+/notifications/subscriptions/{channel}
+
+GET
+/notifications/subscriptions/topics
+
+GET
+/notifications/subscriptions/channels
+
+POST
+/internal/notifications
+
+=== ui (Admin Portal)
+
+=== user-admin
+==== Port
+11090
+
+==== Endpoints
+- user-admin +
+User administration operations
+
+
+POST
+/users
+
+GET
+/users
+
+GET
+/users/{id}
+
+PATCH
+/users/{id}
+
+DELETE
+/users/{id}
+
+GET
+/users/{id}/avatar
+
+GET
+/users/authorities
+
+GET
+/users/roles
+
+POST
+/users/roles
+
+GET
+/users/roles/{id}
+
+DELETE
+/users/roles/{id}
+
+PATCH
+/users/roles/{id}
+
+DELETE
+/users/2fa
+
+GET
+/users/me
+
+GET
+/users/statistics
+
+GET
+/internal/users
+
+GET
+/internal/users/{value}
+
+- user-settings +
+User settings operations
+
+
+GET
+/users/{id}/settings/units
+
+PUT
+/users/{id}/settings/units
+
+PATCH
+/users/{id}/settings/units
+
+GET
+/me/settings/units
+
+PUT
+/me/settings/units
+
+PATCH
+/me/settings/units
+
+=== licensing-main
+==== Port
+11100
+
+==== Endpoints
+TBA

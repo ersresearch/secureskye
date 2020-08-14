@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package vehicle.registry;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.vehicle.registry.api.proto";
+option java_outer_classname = "Proto";
+
+// Code information
+message CodeInfoProto {
+    string id = 1;
+    int64 code = 2; // code value
+    string detail = 3; // detail of code
+}
+
+// Error code structure
+message ErrorCodeInfoProto {
+    string id = 1;
+    string ips_version = 2; // version of ips
+    int32 rule_db_status = 3; // status of rule database
+    uint32 error_count = 4; // number of errors
+    repeated CodeInfoProto error_codes = 5; // list of codes
+}
+
+// Information of ECU
+message EcuInfoProto {
+    string id = 1;
+    EcuTypeProto type = 2;
+    string display_name = 3;
+    InterfaceInfo interface_info = 4; // interface information
+    GatewayInterfaceInfo gateway_interface_info = 5; // gateway interface information
+    ErrorCodeInfoProto error_code = 6; // error code structure
+    string parent_ecu_id = 7; // ID of parent ECU
+    repeated EcuInfoProto children = 8; // List of child ECUs
+    repeated SoftwareInstallationProto software_installation = 10; // List of software installed on ECU
+    double top_position = 11; // top position of ECU.
+    double left_position = 12; // left position of ECU.
+    SecurityStatusProto security_status = 13; // alert status of ECU.
+
+    // Define interface information structure
+    message InterfaceInfo {
+        string ecu_device_id = 1; // id of ECU
+        CommProtocol comm_protocol = 2; // protocol of communication
+        string message_id = 3; // id of message
+        string vehicle_id = 4; // Vehicle ID
+    }
+
+    // Define communication protocol
+    enum CommProtocol {
+        UNSPECIFIED = 0;
+        CAN = 1;
+        LIN = 2;
+        ETHERNET = 3;
+        HTTP = 4;
+        HTTPS = 5;
+        SSL = 6;
+    }
+
+    // Define gateway interface information
+    message GatewayInterfaceInfo {
+        string ip = 1; // IP address of gateway
+        string vin = 2; // Vehicle ID number
+    }
+
+    // Define security status
+    enum SecurityStatusProto {
+        UNCLEAR = 0;
+        NORMAL = 1;
+        INFORMATION = 2;
+        WARNING = 3;
+        CRITICAL = 4;
+    }
+
+    // Define ecu type.
+    enum EcuTypeProto {
+        UNDEFINED = 0;
+        GATEWAY = 1;
+        GENERIC = 2;
+    }
+}
+
+// List information of ECUs
+message EcuInfoListProto {
+    repeated EcuInfoProto ecu_info = 1;
+}
+
+// Response status for ECU Software Installation
+message SoftwareInstallationResponseProto{
+    InstallationStatusProto status = 1;
+    string ecu_device_id = 2;
+}
+
+message SoftwareInstallationProto {
+    string id = 1;
+    EcuInfoProto ecu = 2;
+    string software_id = 3;
+    SoftwareVersionProto current = 4;
+    InstallationStatusProto status = 5;
+    string message = 6;
+    int64 last_modified = 7;
+}
+
+enum InstallationStatusProto {
+    UNKNOWN = 0;
+    INSTALLING = 1;
+    UNINSTALLING = 2;
+    SUCCESS = 3;
+    ERROR = 4;
+}
+
+message SoftwareProto {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    SoftwareVersionProto latest = 4;
+    repeated SoftwareVersionProto versions = 5;
+}
+
+message SoftwareListProto {
+    repeated SoftwareProto data = 1;
+}
+
+message SoftwareVersionProto {
+    string id = 1;
+    int64 version_code = 2;
+    string version_name = 3;
+    int64 available_since = 4;
+    string changelog = 5;
+    string image_id = 6;
+    string ecu_device_id = 7;
+    string software_id = 8;
+}
+
+message SoftwareVersionListProto {
+    repeated SoftwareVersionProto data = 1;
+}
+

@@ -1,0 +1,76 @@
+<div class="animated fadeIn" *ngIf="metadata">
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-7">
+          <h3 class="card-title clearfix">Image Archive</h3>
+        </div>
+        <div class="col-5 text-right">
+          <button type="button" class="btn btn-danger" (click)="remove()">
+            <i class="fa fa-trash-o"></i> Remove</button>
+        </div>
+      </div>
+      <hr>
+      <dl class="row">
+        <dt class="col-sm-3">ID</dt>
+        <dd class="col-sm-9">{{ metadata.id || '&nbsp;' }}</dd>
+        <dt class="col-sm-3">Family</dt>
+        <dd class="col-sm-9">{{ metadata.family || '&nbsp;' }}</dd>
+        <dt class="col-sm-3">Version</dt>
+        <dd class="col-sm-9">{{ metadata.version || '&nbsp;' }}</dd>
+        <dt class="col-sm-3">Type</dt>
+        <dd class="col-sm-9">{{ metadata.updateType || '&nbsp;' }}</dd>
+        <dt class="col-sm-3">ECUs</dt>
+        <dd class="col-sm-9">{{ metadata.ecus.length || '&nbsp;' }}</dd>
+      </dl>
+      <div class="row">
+        <div class="col-sm-4 tree">
+          <div id="ecuList">
+            <tree-root [nodes]="ecuNodes" (activate)="load($event)" [options]="treeviewOpts"></tree-root>
+          </div>
+        </div>
+        <div class="col-sm-8">
+          <div class="card mb-0" *ngIf="displayingEcu">
+            <div class="card-header bg-secondary">
+              <i class="fa fa-hdd-o"></i> ECU Details
+            </div>
+            <div class="card-body bg-light">
+              <dl class="row">
+                <dt class="col-sm-3">ID</dt>
+                <dd class="col-sm-9">{{ displayingEcu.id || '&nbsp;' }}</dd>
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">{{ displayingEcu.description || '&nbsp;' }}</dd>
+                <dt class="col-sm-3">Version</dt>
+                <dd class="col-sm-9">{{ displayingEcu.version || '&nbsp;' }}</dd>
+                <dt class="col-sm-3">Images</dt>
+                <dd class="col-sm-9">{{ displayingEcu.images.length || '&nbsp;' }}</dd>
+              </dl>
+            </div>
+          </div>
+          <div class="card mb-0" *ngIf="displayingImg">
+            <div class="card-header bg-secondary">
+              <i class="fa fa-file-archive-o"></i> Image Details
+            </div>
+            <div class="card-body bg-light">
+              <dl class="row">
+                <dt class="col-sm-3">ID</dt>
+                <dd class="col-sm-9">{{displayingImg.id || '&nbsp;'}}</dd>
+                <dt class="col-sm-3">Name</dt>
+                <dd class="col-sm-9">{{displayingImg.name || '&nbsp;'}}</dd>
+                <dt class="col-sm-3">Checksum</dt>
+                <dd class="col-sm-9">{{displayingImg.checksum || '&nbsp;'}}</dd>
+                <dt class="col-sm-3">Download</dt>
+                <dd class="col-sm-9">
+                  <a href="{{ displayingImg.url }}" (click)="downloadImg(); $event.preventDefault();">Link</a>
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer">
+      <button type="button" class="btn btn-primary btn-lg btn-block" (click)="publish()">Publish</button>
+    </div>
+  </div>
+</div>

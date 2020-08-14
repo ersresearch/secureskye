@@ -1,0 +1,17 @@
+/*
+ * @Author: LoiDT2 
+ * @Date: 2018-11-13 09:23:27 
+ * @Last Modified by:   LoiDT2 
+ * @Last Modified time: 2018-11-13 09:23:27 
+ */
+.iconUpdate {
+  -webkit-animation: rotation 2s infinite linear;
+}
+@-webkit-keyframes rotation {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(359deg);
+  }
+}

@@ -1,0 +1,198 @@
+syntax = "proto3";
+
+package vehicle.admin;
+
+import "totp.proto";
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.vehicle.admin.api.proto";
+option java_outer_classname = "Proto";
+
+enum VehicleBodyTypeProto {
+    CUSTOM = 0;
+    HATCHBACK = 1;
+    SEDAN = 2;
+    MUV = 3;
+    SUV = 4;
+    COUPE = 5;
+    CONVERTIBLE = 6;
+    WAGON = 7;
+    VAN = 8;
+    JEEP = 9;
+}
+
+// A vehicle maker
+message VehicleMakerProto {
+    string id = 1; // Identifier of vehicle maker
+    string name = 2; // Maker name
+}
+
+message VehicleMakerListProto {
+    repeated VehicleMakerProto data = 1;
+}
+
+// A vehicle model
+message VehicleModelProto {
+    string id = 1; // Identifier of the vehicle model
+    string name = 2; // Model name
+    totp.TwoFactorAuthenticationStatusProto vehicle_2fa_status = 3;
+    repeated VehicleOauthTotpProto vehicle_2fa = 4; // List of vehicles' OTP info
+    VehicleMakerProto maker = 5; // Vehicle maker
+    VehicleBodyTypeProto body = 6; // Vehicle body type
+    repeated ModelDisplaySettingsProto display_settings = 7; // Model on/off parameter settings
+}
+
+message VehicleModelListProto {
+    repeated VehicleModelProto model = 1;
+}
+
+// A vehicle with its model
+message VehicleProto {
+    string id = 1; // Identifier of the vehicle
+    string model_id = 2; // Identifier of the vehicle model
+    string model_name = 3; // Model name
+    string name = 4; // Vehicle name
+    totp.TwoFactorAuthenticationStatusProto tfa = 5; // 2FA status info
+    string maker_id = 6; // Vehicle maker id
+    string maker_name = 7; // Vehicle maker name
+    VehicleBodyTypeProto body_type = 8; // Vehicle body type
+    string vin = 9; // Vehicle Identification Number
+    string color = 10; // Vehicle color
+    string image_url = 11; // Vehicle image url
+    int32 update_count = 12; // Vehicle update count
+    VehicleConnectionProto connection = 13; // Vehicle connection status
+    VehicleAlertCountProto alert_count = 14; // Vehicle alert count
+    bool deleted = 15; // Vehicle status
+}
+
+// Vehicle tracking status
+enum VehicleTrackingStatusProto {
+    UNKNOWN = 0;
+    STOPPED = 1;
+    MOVING = 2;
+}
+
+// Vehicle connection
+message VehicleConnectionProto {
+    string id = 1; // Identifier of the vehicle connection
+    bool connected = 2; // Connected
+    int64 connected_timestamp = 3; // Connected timestamp
+    int64 disconnected_timestamp = 4; // Disconnected timestamp
+    int64 last_receiving_timestamp = 5; // Last receiving timestamp
+    string ip_address = 6; // Ip Address
+    VehicleTrackingStatusProto status = 7; // Vehicle tracking status
+}
+// Vehicle connection count
+message VehicleConnectionCountProto {
+    uint64 connected_count = 1; // Vehicle connected
+    uint64 total_vehicle = 2; // Total vehicle
+}
+
+// Vehicle alert count
+message VehicleAlertCountProto {
+    string id = 1; // Identifier of the vehicle alert count
+    uint32 danger = 2; // Number of danger alerts
+    uint32 warning = 3; // Number of warning alerts
+    uint32 info = 4; // Number of info alerts
+}
+
+// Vehicle list
+message VehicleListProto {
+    repeated VehicleProto data = 1; // List of vehicle
+}
+
+// Vehicle information plus its OAuth2 client ID, sent after registration only
+message RegisteredVehicleProto {
+    VehicleProto vehicle = 1; // The registered vehicle
+    string client_id = 2; // OAuth2 client ID of the vehicle
+}
+
+// Vehicle statistics
+message VehicleStatisticsProto {
+    int64 vehicle_count = 1; // Registered vehicle count
+    int64 model_count = 2; // Registered model count
+}
+
+// Vehicle statistic online
+message VehicleStatisticOnlineProto {
+    int64 connected_count = 1; // Connected vehicle count
+    int64 total_vehicle = 2; // Registered vehicle count
+    int64 model_count = 3; // Registered model count
+}
+
+// Vehicle 2FA info proto
+message VehicleOauthTotpProto {
+    string vehicle_id = 1; // Vehicle ID
+    string vehicle_name = 2; // Vehicle Name
+    totp.OauthTotpProto oauth_totp = 3; // TOTP info
+    totp.TwoFactorAuthenticationStatusProto status = 4; // Status
+}
+
+// Display settings of a vehicle model
+message ModelDisplaySettingsProto {
+    string id = 1; // model's display settings id
+    ModelDisplaySettingsTypeProto settings = 2; // Type of the settings
+    bool value = 3; // Boolean value of the setting
+    string model_id = 4;
+}
+
+message ModelDisplaySettingsListProto {
+    repeated ModelDisplaySettingsProto list = 1;
+}
+
+enum ModelDisplaySettingsTypeProto {
+    UNDEFINED = 0;
+    OTHER = 1;
+    SPEED = 2;
+    FUEL = 3;
+    TEMPERATURE = 4;
+    RPM = 5;
+    TRIP_ODOMETER = 6;
+    ODOMETER = 7;
+    GEAR = 8;
+    ROUTE = 9;
+    ALERT_NODE = 10;
+    SPEED_GRAPH = 11;
+    RPM_GRAPH = 12;
+    BRAKING_GRAPH = 13;
+    MPG_GRAPH = 14;
+    MIL_ENGINE = 15;
+    MIL_TIRE_PRESSURE = 16;
+    MIL_ENGINE_OIL = 17;
+    MIL_BRAKES = 18;
+    MIL_ENGINE_COOLANT = 19;
+    MIL_BATTERY = 20;
+}
+
+// Vehicle Security List information
+message VehicleSecurityConfigListProto {
+    repeated VehicleSecurityConfigProto data = 1;
+}
+
+// Vehicle Security information
+message VehicleSecurityConfigProto {
+    string id = 1;
+    bool is_active = 2;
+    SecuritySoftwareProto security_software = 3;
+    string vehicle_id = 4; // Vehicle ID
+    repeated SecuritySettingConfigProto security_setting_config = 5;
+}
+
+message SecuritySettingConfigProto {
+    string id = 1;
+    bool is_active=2;
+    SecuritySettingProto security_setting = 3;
+}
+
+message SecuritySettingProto {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string security_software_id = 4; // Software ID
+}
+
+message SecuritySoftwareProto {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+}

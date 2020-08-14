@@ -1,0 +1,488 @@
+<div class="animated fadeIn">
+  <div class="row stretch-card-height">
+    <div class="col-md-6">
+      <!-- GPS -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fa fa-map-marker"></i>&nbsp; Location
+          <span class="badge badge-pill badge-light float-right">Last updated: {{gpsLastUpdated}}</span>
+        </div>
+        <div class="card-body p-0">
+          <agm-map [latitude]="gpsLatitude" [longitude]="gpsLongitude" style="height: 350px" [zoom]="14" [usePanning]="true">
+            <agm-marker [latitude]="gpsLatitude" [longitude]="gpsLongitude"></agm-marker>
+          </agm-map>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <!-- Speedometer-->
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="row justify-content-center mt-2 mb-3">
+            <div class="text-uppercase font-weight-bold">Speed&nbsp;
+              <span class="text-mute small">km/h</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6 col-md-8 col-lg-9">
+              <div [chart]="speedMonitoringChart" class="speed-chart"></div>
+            </div>
+            <div class="col-sm-6 col-md-4 col-lg-3">
+              <mwl-gauge [ngClass]="speedGaugeValueClass" [max]="300" [value]="speedGaugeValue" [animated]="true" [animationDuration]="speedGaugeAnimationDuration"
+                [label]="gaugeLabel">
+              </mwl-gauge>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="text-muted text-uppercase float-left">Odometer: </div>
+          <div class="odometer-container font-weight-bold float-right">
+            <ng2-odometer [number]="odometerValue" [config]="odometerConfig">
+            </ng2-odometer>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row stretch-card-height">
+    <div class="col-md-6">
+      <!-- Wheel-->
+      <div class="card">
+        <div class="card-body">
+          <div class="row justify-content-center mt-2 mb-3">
+            <div class="text-uppercase font-weight-bold">Wheel Speed&nbsp;
+              <span class="text-mute small">RPM</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6 col-lg-3">
+              <div class="chart-wrapper">
+                <mwl-gauge class="wheelSpeedValue" [ngClass]="wheelSpeedValueFLClass" [max]="300" [value]="frontLeftSpeed" [animated]="true"
+                  [animationDuration]="speedGaugeAnimationDuration" [label]="gaugeLabel" [dialStartAngle]="-90" [dialEndAngle]="-90.001">
+                </mwl-gauge>
+                <p class="text-center component-title">Front - Left</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <div class="chart-wrapper">
+                <mwl-gauge class="wheelSpeedValue" [ngClass]="wheelSpeedValueFRClass" [max]="300" [value]="frontRightSpeed" [animated]="true"
+                  [animationDuration]="speedGaugeAnimationDuration" [label]="gaugeLabel" [dialStartAngle]="-90" [dialEndAngle]="-90.001">
+                </mwl-gauge>
+                <p class="text-center component-title">Front - Right</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <div class="chart-wrapper">
+                <mwl-gauge class="wheelSpeedValue" [ngClass]="wheelSpeedValueRLClass" [max]="300" [value]="rearLeftSpeed" [animated]="true"
+                  [animationDuration]="speedGaugeAnimationDuration" [label]="gaugeLabel" [dialStartAngle]="-90" [dialEndAngle]="-90.001">
+                </mwl-gauge>
+                <p class="text-center component-title">Rear - Left</p>
+              </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+              <div class="chart-wrapper">
+                <mwl-gauge class="wheelSpeedValue" [ngClass]="wheelSpeedValueRRClass" [max]="300" [value]="rearRightSpeed" [animated]="true"
+                  [animationDuration]="speedGaugeAnimationDuration" [label]="gaugeLabel" [dialStartAngle]="-90" [dialEndAngle]="-90.001">
+                </mwl-gauge>
+                <p class="text-center component-title">Rear - Right</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="text-muted text-uppercase float-left">Gear Shift Position: </div>
+          <div class="odometer-container font-weight-bold float-right">
+            <span class="odometer-value">{{gearPosition}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <div class="row justify-content-center mt-2 mb-3">
+            <div class="text-uppercase font-weight-bold">Energy
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-9">
+              <div id="fuelGauge"></div>
+            </div>
+            <div class="col-lg-3">
+              <div class="battery-container d-flex flex-column justify-content-center align-items-center">
+                <div class="battery">
+                  <div class="charge" [ngClass]="{'low': batteryLevel <= 30}" [style.height.%]="batteryLevel"></div>
+                  <span>{{batteryLevel}}%</span>
+                </div>
+                <p class="text-center component-title">Battery</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover table-outline mb-0">
+              <thead class="thead-light text-dark">
+                <tr>
+                  <th>Test</th>
+                  <th>Availability</th>
+                  <th>Completion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>Components</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.componentsTest.available)">
+                      {{textAvailable(mil?.componentsTest.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.componentsTest.incomplete)">
+                      {{textComplete(mil?.componentsTest.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Fuel System</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.fuelSystemTest.available)">
+                      {{textAvailable(mil?.fuelSystemTest.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.fuelSystemTest.incomplete)">
+                      {{textComplete(mil?.fuelSystemTest.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Misfire</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.misfireTest.available)">
+                      {{textAvailable(mil?.misfireTest.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.misfireTest.incomplete)">
+                      {{textComplete(mil?.misfireTest.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+              <tbody *ngIf="mil?.engineType === 0">
+                <tr>
+                  <th colspan="3">
+                    Engine Type: SPARK
+                  </th>
+                </tr>
+                <tr>
+                  <th>Exhaust Gas Recirculation</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.sparkTests.egrSystem.available)">
+                      {{textAvailable(mil?.sparkTests.egrSystem.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.sparkTests.egrSystem.incomplete)">
+                      {{textComplete(mil?.sparkTests.egrSystem.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Oxygen Sensor Heater</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.sparkTests.oxygenSensorHeater.available)">
+                      {{textAvailable(mil?.sparkTests.oxygenSensorHeater.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.sparkTests.oxygenSensorHeater.incomplete)">
+                      {{textComplete(mil?.sparkTests.oxygenSensorHeater.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Oxygen Sensor</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.sparkTests.oxygenSensor.available)">
+                      {{textAvailable(mil?.sparkTests.oxygenSensor.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.sparkTests.oxygenSensor.incomplete)">
+                      {{textComplete(mil?.sparkTests.oxygenSensor.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>A/C Refrigerant</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.sparkTests.acRefrigerant.available)">
+                      {{textAvailable(mil?.sparkTests.acRefrigerant.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.sparkTests.acRefrigerant.incomplete)">
+                      {{textComplete(mil?.sparkTests.acRefrigerant.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Secondary Air</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.sparkTests.secondaryAirSystem.available)">
+                      {{textAvailable(mil?.sparkTests.secondaryAirSystem.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.sparkTests.secondaryAirSystem.incomplete)">
+                      {{textComplete(mil?.sparkTests.secondaryAirSystem.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Evaporative</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.sparkTests.evaporativeSystem.available)">
+                      {{textAvailable(mil?.sparkTests.evaporativeSystem.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.sparkTests.evaporativeSystem.incomplete)">
+                      {{textComplete(mil?.sparkTests.evaporativeSystem.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Heated Catalyst</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.sparkTests.heatedCatalyst.available)">
+                      {{textAvailable(mil?.sparkTests.heatedCatalyst.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.sparkTests.heatedCatalyst.incomplete)">
+                      {{textComplete(mil?.sparkTests.heatedCatalyst.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Catalyst</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.sparkTests.catalyst.available)">
+                      {{textAvailable(mil?.sparkTests.catalyst.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.sparkTests.catalyst.incomplete)">
+                      {{textComplete(mil?.sparkTests.catalyst.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+              <tbody *ngIf="mil?.engineType === 1">
+                <tr>
+                  <td colspan="3" class="font-weight-bold">
+                    Engine Type: COMPRESSION
+                  </td>
+                </tr>
+                <tr>
+                  <th>EGR VVT</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.compressionTests.egrVvtSystem.available)">
+                      {{textAvailable(mil?.compressionTests.egrVvtSystem.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.compressionTests.egrVvtSystem.incomplete)">
+                      {{textComplete(mil?.compressionTests.egrVvtSystem.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>PM Filter Monitoring</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.compressionTests.pmFilterMonitoring.available)">
+                      {{textAvailable(mil?.compressionTests.pmFilterMonitoring.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.compressionTests.pmFilterMonitoring.incomplete)">
+                      {{textComplete(mil?.compressionTests.pmFilterMonitoring.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Exhaust Gas Sensor</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.compressionTests.exhaustGasSensor.available)">
+                      {{textAvailable(mil?.compressionTests.exhaustGasSensor.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.compressionTests.exhaustGasSensor.incomplete)">
+                      {{textComplete(mil?.compressionTests.exhaustGasSensor.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Boost Pressure</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.compressionTests.boostPressure.available)">
+                      {{textAvailable(mil?.compressionTests.boostPressure.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.compressionTests.boostPressure.incomplete)">
+                      {{textComplete(mil?.compressionTests.boostPressure.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Nox Scr Monitor</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.compressionTests.noxScrMonitor.available)">
+                      {{textAvailable(mil?.compressionTests.noxScrMonitor.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.compressionTests.noxScrMonitor.incomplete)">
+                      {{textComplete(mil?.compressionTests.noxScrMonitor.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>NMHC Catalyst</th>
+                  <td>
+                    <span class="badge" [ngClass]="statusAvailable(mil?.compressionTests.nmhcCatalyst.available)">
+                      {{textAvailable(mil?.compressionTests.nmhcCatalyst.available)}}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="statusComplete(mil?.compressionTests.nmhcCatalyst.incomplete)">
+                      {{textComplete(mil?.compressionTests.nmhcCatalyst.incomplete)}}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+              <caption class="p-0">
+                Diagnostic trouble codes: {{mil?.dtcCount}}
+              </caption>
+              <caption class="mil-status p-0">
+                MIL Status
+                <span *ngIf="mil?.mil" class="float-right mil-on">
+                  <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                    <path fill="#ffc107" d="M7,4V6H10V8H7L5,10V13H3V10H1V18H3V15H5V18H8L10,20H18V16H20V19H23V9H20V12H18V8H12V6H15V4H7Z" />
+                  </svg>
+                </span>
+                <span *ngIf="!mil?.mil" class="float-right mil-off">
+                  <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                    <path fill="#73818f" fill-opacity="0.3" d="M7,4V6H10V8H7L5,10V13H3V10H1V18H3V15H5V18H8L10,20H18V16H20V19H23V9H20V12H18V8H12V6H15V4H7Z"
+                    />
+                  </svg>
+                </span>
+              </caption>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row stretch-card-height">
+    <!-- Engine Load Status -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="row justify-content-center mt-2 mb-3">
+            <div class="text-uppercase font-weight-bold">Engine Load
+            </div>
+          </div>
+          <div id="loadGauge"></div>
+        </div>
+        <div class="card-footer">
+          <!-- Engine Runtime -->
+          <div class="odometer-container font-weight-bold float-right">
+            <span>Run time: </span>
+            <ng2-odometer [number]="engineRuntime?.hours()" [config]="runtimeConfig">
+            </ng2-odometer>
+            <span> : </span>
+            <ng2-odometer [number]="engineRuntime?.minutes()" [config]="runtimeConfig">
+            </ng2-odometer>
+            <span> : </span>
+            <ng2-odometer [number]="engineRuntime?.seconds()" [config]="runtimeConfig">
+            </ng2-odometer>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Throttle Status -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="row justify-content-center mt-2 mb-3">
+            <div class="text-uppercase font-weight-bold">Throttle
+            </div>
+          </div>
+          <div id="throttleGauge"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Engine Coolant Status -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="row justify-content-center mt-2 mb-3">
+            <div class="text-uppercase font-weight-bold">Engine Coolant
+            </div>
+          </div>
+          <div id="coolGauge"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Intake Air Status -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="row justify-content-center mt-2 mb-3">
+            <div class="text-uppercase font-weight-bold">Intake Air
+            </div>
+          </div>
+          <div id="airGauge"></div>
+        </div>
+      </div>
+    </div>
+    <!-- RPM Status -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="row justify-content-center mt-2 mb-3">
+            <div class="text-uppercase font-weight-bold">RPM
+            </div>
+          </div>
+          <div id="rpmGauge"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Mass Ait Flow Status -->
+    <div class="col-md-6 col-lg-3">
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="row justify-content-center mt-2 mb-3">
+            <div class="text-uppercase font-weight-bold">Mass Air Flow
+            </div>
+          </div>
+          <div id="massGauge"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

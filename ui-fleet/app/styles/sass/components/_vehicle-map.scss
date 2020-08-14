@@ -1,0 +1,140 @@
+.mapContainerVehicleView {
+  position: relative;
+  height: 100%;
+  border-radius: 8px;
+  .overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 2;
+    cursor: pointer;
+    .text {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      top: 50%;
+      left: 50%;
+      font-size: 30px;
+      color: white;
+      transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+    }
+  }
+  .overlay-alert {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 90%;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+    cursor: pointer;
+    .text-alert {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      font-size: 18px;
+      color: white;
+      transform: translate(-50%, -50%);
+      -ms-transform: translate(-50%, -50%);
+    }
+  }
+  .mapboxgl-map {
+    opacity: 0.8;
+    height: 100%;
+    width: 100%;
+    .mapboxgl-control-container {
+      display: none;
+    }
+    canvas {
+      border-radius: 8px;
+      height: 100% !important;
+      width: 100% !important;
+    }
+  }
+  .navContainver {
+    top: 0;
+    right: 0;
+    width: 28%;
+    height: 100%;
+    opacity: 0.9;
+    overflow: auto;
+    position: absolute;
+    max-height: 100%;
+    padding-top: 0;
+    border-radius: 0 8px 8px 0;
+    background-color: #F2F2F2;
+    .move-enter {
+      opacity: 0.01;
+      transform: translate(-40px, 0);
+    }
+    .move-enter-active {
+      opacity: 1;
+      transform: translate(0, 0);
+      transition: all 500ms ease-in;
+    }
+    .move-exit {
+      opacity: 1;
+      transform: translate(0, 0)
+    }
+    .move-exit-active {
+      opacity: 0.01;
+      transform: translate(40px, 0);
+      transition: all 500ms ease-in;
+    }
+  }
+  .hiddenNav {
+    top: 0;
+    right: 0;
+    height: 100%;
+    opacity: 0.9;
+    overflow: auto;
+    position: absolute;
+    max-height: 100%;
+    padding-top: 0;
+    border-radius: 0 8px 8px 0;
+    // animation-name: example;
+    animation-duration: 2s; // .move-enter {
+  }
+  /* width */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 100px;
+  }
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 8px;
+  }
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 8px;
+  }
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+
+// @keyframes example {
+//   0% {
+//     width: 28%;
+//     opacity: 1; 
+//     transform: translate(0, 0);
+//   }
+//   100% {
+//     width: 28%;
+//     transform: translate(10px, 0);
+//     opacity: 0;
+//   }
+// }

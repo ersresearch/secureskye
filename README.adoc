@@ -1,0 +1,163 @@
+= SecureSKYE 's project structure
+nhan.maidothanh <nhanmdt@fsoft.com.vn>
+v0.5.0.M1, 2018/03/12
+:toc:
+:homepage: https://trilliumsecure.com
+:icons: font
+
+[[server-components]]
+== Server components
+=== Databases
+==== ScyllaDB
+NoSql
+|===
+|Homepage|http://www.scylladb.com/
+|Docker|scylladb/scylla:2.0.0
+|Exposed port|9042
+|===
+
+==== PostgreSQL
+RDBMS storing
+
+. Authentication info
+. Authorization info
+. Vehicle info
+
+|===
+|Homepage|https://www.postgresql.org/
+|Docker|postgres:10-alpine
+|Exposed port|5432
+|===
+
+=== Service Discovery
+Consul for service discovery and configuration
+
+|===
+|Homepage|https://www.consul.io/
+|Docker|consul:0.9.3
+|Exposed port|8500
+|===
+
+=== Gateway
+Traefik for HTTP reverse proxy and load balancer
+
+|===
+|Homepage 2.1+|https://traefik.io/
+|Docker 2.1+|/gateway
+1.3+|Exposed ports
+|80|Gateway using HTTP
+|43|Gateway using HTTPS
+|8080|Traefik management UI
+|===
+
+=== OAuth
+Based on OAuth2 implemented by Spring Security OAuth2. <<oauth2\README.adoc#,More>>
+
+==== oauth-common
+Common package for UAA & SAA modules
+
+==== UAA (User Account & Authentication)
+OAuth server for user, provide oauth access token for authorization.
+
+==== SAA (Service Account & Authentication)
+OAuth server for internal services, provide JWT for authorization.
+
+TIP: JWT asymmetric keypair info in `\jwt`
+
+
+=== User APIs
+==== Admin
+Provide APIs for user administration.
+
+. Base path: /api
+. Endpoints
+
+[options="header"]
+|===
+|Endpoint | Description
+|GET /users | List of all managed user.
+|GET /users/authorities | List of all authorities
+|GET /users/:userid | Get an user with id.
+|POST /users | Add an new user.
+|PUT /users/:userid | Update an user.
+|DELETE /users/:userid | Delete a registered user.
+|===
+
+=== Vechile APIs
+==== Admin
+Provide APIs for vehicle administration.
+
+. Base path: /vehicle/admin
+. Endpoints
+
+[options="header"]
+|===
+|Endpoint | Description
+|/list | List of all managed vehicles.
+|/get/:clientid | Get vehicle by client id.
+|===
+
+==== Message
+Provide APIs for listening event message of vehicle
+
+. Base path: /vehicle/message
+. Endpoints
+
+[options="header"]
+|===
+|Endpoint | Description
+|/save | Save a vehicle message on the server.
+|/events/save | Save a batch of vehicle events on the server.
+|/events/list | List the recent events of a vehicle.
+|/events/list.json | List the recent events of a vehicle as json
+|===
+
+=== Front-end UI
+UI for monitoring and managing vehicles. <<ui\README.adoc#,More>>
+
+== Distributions
+=== Trillium docker repository
+You can connect and pull built images of services from `https://10.0.0.7`
+
+Add `docker\trillium.crt` to Trusted Root CA to allow connection to registry server.
+
+=== Deployment
+Deploy via `docker-compose` with \compose\spring-backend\docker-compose.yml
+
+== Deferred modules
+[options="headers"]
+|===
+|Module | Path | Description
+|Kubernetes |/kubernetes | Unused deploy automation
+|TCPI Bridge |/tcp-bridge |Bridge between TCP & HTTP
+|EnOcean |/enocean
+|Java proxy of native library ENOcean for energy harvesting wireless technology. (https://www.enocean.com/en/[?])
+|Philips Hue | /philipshue
+|Module based on Philips Hue SDK for interacting with the hue system (https://developers.meethue.com/[?])
+|IoT Hub |/hub
+|Integrate with other IoT solution. For now it's ENOcean & Philips Hue.
+|===
+
+== Deprecated modules
+[options="headers"]
+|===
+|Module | Path | Description
+|Zuul |/zuul |API Gateway by Spring Cloud Netflix Zuul
+|Eureka |/eureka| Service discovery by Spring Cloud Netflix Eureka
+|Old backend server |/server |Old, unused API for spring backend
+|Old car API |/api|Old, unused API for car
+|===
+
+== Misc
+- The project is managed by Gradle. All build, run, publish,... tasks are
+  already defined by Dominik-san. Should works without problems.
+- Other resources in the projects are:
+|===
+|Path | Summary
+
+|/gradle | Gradle build tool wrapper
+
+|/run-scripts | Script to run application automatically.
+
+|/docs | Only draft design, graphs, charts for now.
+|===

@@ -1,0 +1,34 @@
+<div bsModal #otpModal="bs-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="OTP Input" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title pull-left">2-Factor Authentication</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="otpModal.hide()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" [formGroup]="modalForm" *ngIf="modalForm">
+          <ng-container *ngIf="modalForm.contains('otp')">
+            <label for="otp">Verification code</label>
+            <input #otp type="text" formControlName="otp" class="form-control" id="otp" [ngClass]="fieldValidationClass('otp')" (keyup.enter)="otpEntered()"
+              autofocus maxlength="6">
+            <div class="invalid-feedback" *ngIf="fieldValidationError('otp', 'required')">Please enter verification code displayed on your mobile.</div>
+            <div class="invalid-feedback" *ngIf="fieldValidationError('otp', 'pattern')">Verification code is 6 digit number.</div>
+          </ng-container>
+          <ng-container *ngIf="modalForm.contains('scratchCode')">
+            <label for="scratchCode">Enter scratch code to reset 2-Factor authentication</label>
+            <input #scratchCode type="text" formControlName="scratchCode" class="form-control" id="scratchCode" [ngClass]="fieldValidationClass('scratchCode')"
+              (keyup.enter)="scratchCodeEntered()" autofocus maxlength="8">
+            <div class="invalid-feedback" *ngIf="fieldValidationError('scratchCode', 'required')">Scratch code required.</div>
+            <div class="invalid-feedback" *ngIf="fieldValidationError('scratchCode', 'pattern')">Scratch code is 8 digit number.</div>
+          </ng-container>
+        </div>
+      </div>
+      <div class="modal-footer" *ngIf="modalForm">
+        <button *ngIf="modalForm.contains('otp')" type="button" class="btn btn-success group-fix" (click)="otpEntered()">Verify</button>
+        <button *ngIf="modalForm.contains('scratchCode')" type="button" class="btn btn-danger group-fix" (click)="scratchCodeEntered()">Reset</button>
+      </div>
+    </div>
+  </div>
+</div>

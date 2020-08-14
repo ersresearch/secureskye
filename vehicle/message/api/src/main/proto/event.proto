@@ -1,0 +1,419 @@
+syntax = "proto3";
+
+package vehicle.message;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.vehicle.message.api.proto";
+option java_outer_classname = "EventProto";
+
+// OBD-II Mode 01 PID 0x01
+message MilStatusEventProto {
+    int64 timestamp = 1;
+    bool mil = 2;
+    uint32 dtc_count = 3;
+    reserved 4;
+    EngineType engine_type = 5;
+
+    OnBoardTest components_test = 6;
+    OnBoardTest fuel_system_test = 7;
+    OnBoardTest misfire_test = 8;
+
+    oneof engine_tests {
+        SparkTests spark_tests = 9;
+        CompressionTests compression_tests = 10;
+    }
+
+    message SparkTests {
+        OnBoardTest egr_system = 1;
+        OnBoardTest oxygen_sensor_heater = 2;
+        OnBoardTest oxygen_sensor = 3;
+        OnBoardTest ac_refrigerant = 4;
+        OnBoardTest secondary_air_system = 5;
+        OnBoardTest evaporative_system = 6;
+        OnBoardTest heated_catalyst = 7;
+        OnBoardTest catalyst = 8;
+    }
+
+    message CompressionTests {
+        OnBoardTest egr_vvt_system = 1;
+        OnBoardTest pm_filter_monitoring = 2;
+        OnBoardTest exhaust_gas_sensor = 3;
+        reserved 4;
+        OnBoardTest boost_pressure = 5;
+        reserved 6;
+        OnBoardTest nox_scr_monitor = 7;
+        OnBoardTest nmhc_catalyst = 8;
+    }
+
+    message OnBoardTest {
+        bool available = 1;
+        bool incomplete = 2;
+    }
+
+    enum EngineType {
+        SPARK = 0;
+        COMPRESSION = 1;
+    }
+}
+
+// OBD-II Mode 01 PID 0x04
+message EngineLoadEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // Percent
+}
+
+// OBD-II Mode 01 PID 0x05
+message EngineCoolantEventProto {
+    int64 timestamp = 1;
+    int32 temperature = 2; // Celsius
+}
+
+// OBD-II Mode 01 PID 0x0C
+message RpmEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // RPM
+}
+
+// OBD-II Mode 01 PID 0x0D
+message SpeedEventProto {
+    int64 timestamp = 1;
+    uint32 kmh = 2; // km/h
+}
+
+// OBD-II Mode 01 PID 0x0F
+message IntakeAirEventProto {
+    int64 timestamp = 1;
+    int32 temperature = 2; // Celsius
+}
+
+// OBD-II Mode 01 PID 0x10
+message MassAirFlowEventProto {
+    int64 timestamp = 1;
+    double rate = 2; // grams/sec
+}
+
+// OBD-II Mode 01 PID 0x11
+message ThrottleEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // Percent
+}
+
+// OBD-II Mode 01 PID 0x1F
+message EngineRuntimeEventProto {
+    int64 timestamp = 1;
+    uint32 seconds = 2;
+}
+
+// OBD-II Mode 01 PID 0x2F
+message FuelLevelEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // Percent
+}
+
+// OBD-II Mode 01 PID 0x31
+message CodeClearDistanceEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // Kilometers
+}
+
+// OBD-II Mode 01 PID 0x42
+message ControlModuleVoltageEventProto {
+    int64 timestamp = 1;
+    uint32 voltage = 2; // Volt
+}
+
+// OBD-II Mode 01 PID 0x46
+message AmbientTemperatureEventProto {
+    int64 timestamp = 1;
+    int32 temperature = 2; // Celsius
+}
+
+// OBD-II Mode 03
+message TroubleCodeEventProto {
+    int64 timestamp = 1;
+    string code = 2;
+}
+
+// OBD-II Mode 09 PID 0x02
+message VinEventProto {
+    int64 timestamp = 1;
+    string value = 2; // Vehicle Identification Number
+}
+
+message GpsEventProto {
+    int64 timestamp = 1;
+    double latitude = 2;
+    double longitude = 3;
+}
+
+message OdometerEventProto {
+    int64 timestamp = 1;
+    uint64 value = 2;
+}
+
+message BatteryEnergyEventProto {
+    int64 timestamp = 1;
+}
+
+message FuelConsumptionEventProto {
+    int64 timestamp = 1;
+}
+
+message GearShiftEventProto {
+    int64 timestamp = 1;
+    uint32 gear = 2;
+}
+
+message WheelSpeedEventProto {
+    int64 timestamp = 1;
+    int32 front_left = 2;
+    int32 front_right = 3;
+    int32 rear_left = 4;
+    int32 rear_right = 5;
+}
+
+message Obd2EventBatchProto {
+    repeated MilStatusEventProto mil_status = 0x0101;
+    repeated EngineLoadEventProto engine_load = 0x0104;
+    repeated EngineCoolantEventProto engine_coolant = 0x0105;
+    repeated RpmEventProto rpm = 0x010C;
+    repeated SpeedEventProto speed = 0x010D;
+    repeated IntakeAirEventProto intake_air = 0x010F;
+    repeated MassAirFlowEventProto mass_air_flow = 0x0110;
+    repeated ThrottleEventProto throttle = 0x0111;
+    repeated EngineRuntimeEventProto engine_runtime = 0x011F;
+    repeated FuelLevelEventProto fuel_level = 0x012F;
+    repeated CodeClearDistanceEventProto code_clear_distance = 0x0131;
+    repeated ControlModuleVoltageEventProto control_module_voltage = 0x0142;
+    repeated AmbientTemperatureEventProto ambient_temperature = 0x0146;
+
+    repeated TroubleCodeEventProto trouble_codes = 0x0300;
+
+    repeated VinEventProto vin = 0x0902;
+}
+
+message EventBatchProto {
+    repeated GpsEventProto gps = 1;
+    repeated OdometerEventProto odometer = 3;
+    repeated BatteryEnergyEventProto battery_energy = 4;
+    repeated FuelConsumptionEventProto fuel_consumption = 5;
+    repeated GearShiftEventProto gear_shift = 6;
+    repeated WheelSpeedEventProto wheel_speed = 7;
+
+    Obd2EventBatchProto obd2 = 10000;
+}
+
+// OBD-II Mode 01 PID 0x03
+message FuelSystemStatusEventProto {
+    int64 timestamp = 1;
+    Status system_1 = 2;
+    Status system_2 = 3;
+
+    enum Status {
+        NOTHING = 0;
+        OPEN_LOOP_TEMPERATURE = 1; // Open loop due to insufficient engine temperature
+        CLOSED_LOOP = 2; // Closed loop, using oxygen sensor feedback to determine fuel mix
+        OPEN_LOOP_LOAD_OR_DECELERATION = 4; // Open loop due to engine load OR fuel cut due to deceleration
+        OPEN_LOOP_SYSTEM_FAILURE = 8; // Open loop due to system failure
+        CLOSED_LOOP_FEEDBACK_FAULT = 16; // Closed loop, using at least one oxygen sensor but there is a fault in the feedback system
+    }
+}
+
+// OBD-II Mode 01 PID 0x0A
+message FuelPressureEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // kPa
+}
+
+// OBD-II Mode 01 PID 0x0B
+message IntakePressureEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // kPa
+}
+
+// OBD-II Mode 01 PID 0x0E
+message TimingAdvanceEventProto {
+    int64 timestamp = 1;
+    double value = 2; // Degree
+}
+
+// OBD-II Mode 01 PID 0x12
+message CommandedSecondaryAirStatusEventProto {
+    int64 timestamp = 1;
+    Status status = 2;
+
+    enum Status {
+        NOTHING = 0;
+        UPSTREAM = 1; // Upstream
+        DOWNSTREAM = 2; // Downstream of catalytic converter
+        OUTSIDE_OR_OFF = 4; // From the outside atmosphere or off
+        DIAGNOSTICS = 8; // Pump commanded on for diagnostics
+    }
+}
+
+// OBD-II Mode 01 PID 0x14 - 0x1B
+message OxygenSensorEventProto {
+    int64 timestamp = 1;
+    double voltage = 2; // Volt
+    double fuel_trim = 3; // Percent
+}
+
+// OBD-II Mode 01 PID 0x1C
+message ObdStandardsEventProto {
+    int64 timestamp = 1;
+    Standard standard = 2;
+
+    enum Standard {
+        NONE = 0;
+        OBD2_CARB = 1; // OBD-II as defined by the California Air Resources Board
+        OBD_EPA = 2; // OBD as defined by the Environmental Protection Agency
+        OBD_AND_OBD2 = 3; // OBD and OBD-II
+        OBD1 = 4; // OBD-I
+        NOT_COMPLIANT = 5; // Not OBD compliant
+        EOBD_EUROPE = 6; // EOBD (Europe)
+        EOBD_AND_OBD2 = 7; // EOBD and OBD-II
+        EOBD_AND_OBD = 8; // EOBD and OBD
+        EOBD_OBD_AND_OBD2 = 9; // EOBD, OBD and OBD II
+        JOBD_JAPAN = 10; // JOBD (Japan)
+        JOBD_AND_OBD2 = 11; // JOBD and OBD II
+        JOBD_AND_EOBD = 12; // JOBD and EOBD
+        JOBD_EOBD_AND_OBD2 = 13; // JOBD, EOBD, and OBD II
+        EMD = 17; // Engine Manufacturer Diagnostics (EMD)
+        EMD_PLUS = 18; // Engine Manufacturer Diagnostics Enhanced (EMD+)
+        HD_OBD_C = 19; // Heavy Duty On-Board Diagnostics (Child/Partial) (HD OBD-C)
+        HD_OBD = 20; // Heavy Duty On-Board Diagnostics (HD OBD)
+        WWH_OBD = 21; // World Wide Harmonized OBD (WWH OBD)
+        HD_EOBD1 = 23; // Heavy Duty Euro OBD Stage I without NOx control (HD EOBD-I)
+        HD_EOBD1_N = 24; // Heavy Duty Euro OBD Stage I with NOx control (HD EOBD-I N)
+        HD_EOBD2 = 25; // Heavy Duty Euro OBD Stage II without NOx control (HD EOBD-II)
+        HD_EOBD2_N = 26; // Heavy Duty Euro OBD Stage II with NOx control (HD EOBD-II N)
+        OBDBR1 = 28; // Brazil OBD Phase 1 (OBDBr-1)
+        OBDBR2 = 29; // Brazil OBD Phase 2 (OBDBr-2)
+        KOBD = 30; // Korean OBD (KOBD)
+        IOBD1 = 31; // India OBD I (IOBD I)
+        IOBD2 = 32; // India OBD II (IOBD II)
+        HD_EOBD4 = 33; // Heavy Duty Euro OBD Stage VI (HD EOBD-IV)
+    }
+}
+
+// OBD-II Mode 01 PID 0x21
+message MalfunctionDistanceEventProto {
+    int64 timestamp = 1;
+    uint32 km = 2; // Kilometer
+}
+
+// OBD-II Mode 01 PID 0x22
+message FuelRailPressureEventProto {
+    int64 timestamp = 1;
+    double value = 2; // kPa
+}
+
+// OBD-II Mode 01 PID 0x23
+message FuelRailGaugePressureEventProto {
+    int64 timestamp = 1;
+    double value = 2; // kPa
+}
+
+// OBD-II Mode 01 PID 0x24 - 0x2B
+message OxygenSensor2EventProto {
+    int64 timestamp = 1;
+    double fuel_air_ratio = 2;
+    double voltage = 3;
+}
+
+// OBD-II Mode 01 PID 0x2C
+message ExhaustGasRecirculationEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // Percent
+}
+
+// OBD-II Mode 01 PID 0x2D
+message ExhaustGasRecirculationErrorEventProto {
+    int64 timestamp = 1;
+    int32 value = 2; // Percent
+}
+
+// OBD-II Mode 01 PID 0x2E
+message EvaporativePurgeEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // Percent
+}
+
+// OBD-II Mode 01 PID 0x2F
+message FuelTankLevelInputEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // Percent
+}
+
+// OBD-II Mode 01 PID 0x30
+message CodeClearWarmupsEventProto {
+    int64 timestamp = 1;
+    uint32 warmups = 2;
+}
+
+// OBD-II Mode 01 PID 0x32
+message VaporPressureEventProto {
+    int64 timestamp = 1;
+    double value = 2; // Pa
+}
+
+// OBD-II Mode 01 PID 0x33
+message BarometricPressureEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // kPa
+}
+
+// OBD-II Mode 01 PID 0x34 - 0x3B
+message OxygenSensor3EventProto {
+    int64 timestamp = 1;
+    double ratio = 2;
+    double current = 3; // mA
+}
+
+// OBD-II Mode 01 PID 0x3C - 0x3F
+message CatalystTemperatureEventProto {
+    int64 timestamp = 1;
+    double temperature = 2; // Celsius
+}
+
+// OBD-II Mode 01 PID 0x41
+// TODO!
+
+// OBD-II Mode 01 PID 0x43
+message AbsoluteLoadEventProto {
+    int64 timestamp = 1;
+    uint32 value = 2; // Percent
+}
+
+// OBD-II Mode 01 PID 0x51
+message FuelTypeEventProto {
+    int64 timestamp = 1;
+    Type type = 2;
+
+    enum Type {
+        NOT_AVAILABLE = 0;
+        GASOLINE = 1;
+        METHANOL = 2;
+        ETHANOL = 3;
+        DIESEL = 4;
+        LPG = 5; // Liquefied Petroleum Gas
+        CNG = 6; // Compressed Natural Gas
+        PROPANE = 7;
+        ELECTRIC = 8;
+        BIFUEL_GASOLINE = 9;
+        BIFUEL_METHANOL = 10;
+        BIFUEL_ETHANOL = 11;
+        BIFUEL_LPG = 12;
+        BIFUEL_CNG = 13;
+        BIFUEL_PROPANE = 14;
+        BIFUEL_ELECTRICITY = 15;
+        BIFUEL_ELECTRIC_AND_COMBUSTION = 16;
+        HYBRID_GASOLINE = 17;
+        HYBRID_ETHANOL = 18;
+        HYBRID_DIESEL = 19;
+        HYBRID_ELECTRIC = 20;
+        HYBRID_ELECTRIC_COMBUSTION = 21;
+        HYBRID_REGENERATIVE = 22;
+        BIFUEL_DIESEL = 23;
+    }
+}

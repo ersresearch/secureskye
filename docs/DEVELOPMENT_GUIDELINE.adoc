@@ -1,0 +1,154 @@
+= Development Guideline
+Phung Tan Sang <sangpt3@fsoft.com.vn>
+:toc:
+:homepage: http://trilliumsecure.com
+:icons: font
+:source-highlighter: pygments
+:sectanchors:0.
+
+== Tools
+- IntelliJ IDEA
+- Gradle
+- Docker
+- Java SDK 8
+- Postman
+- Traefik
+- Consul
+- NodeJS (version 10.0 or above)
+- NPM (version 6.0 or above)
+- Yarn (version 1.8 or above)
+- Git
+
+== Clone Repository
+
+Make sure that your team leader already add your account to the git page.
+
+Log in to the git page at this address:
+
+[source]
+----
+https://git3.fsoft.com.vn/fsoft/FGA.DTI.TRILLIUM.BACKEND
+----
+
+First go to your account settings and follow the guide to add `SSH Key` and `GPG Key` to your account.
+Recommended using `Git Bash`
+
+After that, open `IntelliJ IDEA` and add the repository to `IntelliJ IDEA` using its
+`import project from Version Control > Git` with this ssh link:
+
+[source]
+----
+ssh://git@git3.fsoft.com.vn:2022/fsoft/FGA.DTI.TRILLIUM.BACKEND.git
+----
+
+Or clone the repository to your computer by anyway you are familiar with and
+add it to `IntelliJ IDEA` with `import project form existing sources`.
+
+== Build The Project
+
+Open `Docker > Settings` in `General` tab check `Expose daemon on tcp://localhost:2375 without TLS`.
+
+In IntelliJ, go to `File > Settings` or `Crt + Alt + S`, search 'proxy' go to `HTTP Proxy` and set proxy to `No proxy`.
+
+In `Gradle` tab on the right, click `Refresh all Gradle project` at top left corner of the tab.
+Run it multiple time because of some repository may time out.
+
+After that, go back to `Settings` set proxy to `hcm-proxy`.
+
+Open the `terminal`, cd to the project and run: `gradlew buildDocker`
+(make sure your Docker is running - type `docker ps` to check your docker).
+
+If nothing failed your are able to start.
+
+== Working
+
+=== Before you start to code:
+
+- Read carefully `CONTRIBUTING.adoc` abd `README.adoc` for better understanding about the project
+- Pull the newest source from `develop` branch
+- Follow coding convention
+- Remember to add document for your code
+- Add 'Traefik' and 'Consul'.
+download traefik and consul .exe file, put them in a folder.
+Go to `Edit the system environment variables` > `Environment Variables`, in `System variables` double-click the value of 'Path'
+and click `New` and paste your folder path here. `Ok` and close it
+
+=== Run your code
+
+There are some services required to run a service, you can check it out in `docker-compose.yaml`.
+If your computer are able to run many services together, you have to run those before you start your service
+
+If your computer are not able to run too many service, you can direct those require services to the services in the server.
+
+This is the server ip address: `10.88.14.181`
+
+- Open `ui/for-debugging/traefik.toml`
+- You need to change the service ip address from `localhost` to the server's ip
+----
+Example:
+[backends.ui]
+    [backends.ui.servers.ui-local]
+    url = "http://localhost:4200"
+  [backends.consul]
+    [backends.consul.servers.consul-local]
+    url = "http://localhost:8500"
+  [backends.uaa]
+    [backends.uaa.servers.uaa-local]
+    url = "http://localhost:11000"
+  [backends.saa]
+    [backends.saa.servers.saa-local]
+    url = "http://localhost:11010"
+
+To:
+[backends.ui]
+    [backends.ui.servers.ui-local]
+    url = "http://10.88.14.181:4200"
+  [backends.consul]
+    [backends.consul.servers.consul-local]
+    url = "http://10.88.14.181:8500"
+  [backends.uaa]
+    [backends.uaa.servers.uaa-local]
+    url = "http://10.88.14.181:11000"
+  [backends.saa]
+    [backends.saa.servers.saa-local]
+    url = "http://10.88.14.181:11010"
+----
+You don't need to change the services which your are working on.
+
+- in IntelliJ, press `Ctrl + Shift + N` and search for `application.yaml` , choose the file in the service you are working on.
+- Change these line:
+[source,yaml]
+----
+spring:
+  profiles: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/secureskye (1)
+  data:
+    mongodb:
+      host: localhost (2)
+  cloud:
+    consul:
+      host: localhost (3)
+----
+
+To:
+
+[source,yaml]
+----
+spring:
+  profiles: local
+  datasource:
+    url: jdbc:postgresql://10.88.14.181:5432/secureskye (1)
+  data:
+    mongodb:
+      host: 10.88.14.181 (2)
+  cloud:
+    consul:
+      host: 10.88.14.181 (3)
+----
+
+- To run your service, open terminal, move to `your_project > ui > for-debugging`, run this command `traefik`, make
+sure this file is running, this file will direct your service to those service on the local server
+
+- Open `Gradle` tab on the right, go to `:service-name > Tasks > application`, right-click `bootRun` choose `Debug`
+

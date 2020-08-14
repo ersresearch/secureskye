@@ -1,0 +1,17 @@
+{
+    "ID": "ui-fleet-$HOSTNAME",
+    "Name": "ui-fleet",
+    "Address": "$HOSTIP",
+    "Port": $SERVER_PORT,
+    "Tags": [
+        "traefik.frontend.rule=PathPrefixStrip:/fleet-ui;Method:GET"
+    ],
+    "check": {
+        "name": "Service 'ui-fleet' check",
+        "http": "http://$HOSTIP:$SERVER_PORT/ui-application/status",
+        "tls_skip_verify": false,
+        "interval": "10s",
+        "timeout": "1s",
+        "deregister_critical_service_after": "5m"
+    }
+}

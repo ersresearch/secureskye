@@ -1,0 +1,6 @@
+{
+  "ApiGatewayUrl": "",
+  "ApiNoderedUrl": "",
+  "SocketIOUrl": "",
+  "UrlPath": "/fleet-ui"
+}

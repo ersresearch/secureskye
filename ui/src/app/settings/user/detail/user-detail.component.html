@@ -1,0 +1,230 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-4">
+              <h4>Avatar</h4>
+              <p>You can upload an avatar here or get your picture from 3rd party providers.</p>
+            </div>
+            <div class="col-sm-5 col-md-3">
+              <ngx-avatar #avatar [facebookId]="avatar3rdPartyMap['facebook']" [googleId]="avatar3rdPartyMap['google']" [twitterId]="avatar3rdPartyMap['twitter']"
+                [vkontakteId]="avatar3rdPartyMap['vkontakte']" [githubId]="avatar3rdPartyMap['github']" [name]="avatar3rdPartyMap['initials']"
+                [src]="avatar3rdPartyMap['img']" [round]="true" bgColor="#536c79" size="160"></ngx-avatar>
+            </div>
+            <div class="col-sm-7 col-md-5">
+              <h5>Upload new avatar</h5>
+              <div>
+                <input type="file" #avatarFileUpload (change)="avatarFileChange($event)" class="d-none" accept="image/*" />
+                <button type="button" class="btn btn-light mr-2" (click)="avatarFileUpload.click()">Choose file...</button>
+                <span>{{ avatarFileUploadName || 'No file chosen' }} </span>
+              </div>
+              <h5 class="mt-3">Avatar from 3rd party providers</h5>
+              <div>
+                <button type="button" class="btn btn-sm btn-facebook group-fix" (click)="avatar3rdPartyInput('facebook'); $event.preventDefault();">
+                  <span>Facebook</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-google-plus group-fix" (click)="avatar3rdPartyInput('google'); $event.preventDefault();">
+                  <span>Google+</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-twitter group-fix" (click)="avatar3rdPartyInput('twitter'); $event.preventDefault();">
+                  <span>Twitter</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-vk group-fix" (click)="avatar3rdPartyInput('vkontakte'); $event.preventDefault();">
+                  <span>VK</span>
+                </button>
+                <button type="button" class="btn btn-sm btn-github group-fix" (click)="avatar3rdPartyInput('github'); $event.preventDefault();">
+                  <span>Github</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-md-2">
+              <h4>Personal information</h4>
+              <p>User's information and basic settings.</p>
+            </div>
+            <div class="col-md-10">
+              <div *ngIf="userForm" [formGroup]="userForm">
+                <div class="form-group row">
+                  <label for="username" class="col-md-2 col-form-label align-top required">Username </label>
+                  <div class="col-md-10">
+                    <input type="text" formControlName="username" class="form-control" id="username" [ngClass]="fieldValidationClass('username')"
+                      autofocus>
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('username', 'required')">Username required!</div>
+                  </div>
+                </div>
+                <div class="form-group row" *ngIf="!userId">
+                  <label for="password" class="col-md-2 col-form-label align-top required">Password </label>
+                  <div class="col-md-10">
+                    <input type="password" formControlName="password" class="form-control" id="password" [ngClass]="fieldValidationClass('password')">
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('password', 'required')">Password required!</div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="displayName" class="col-md-2 col-form-label align-top required">Display Name </label>
+                  <div class="col-md-10">
+                    <input type="text" formControlName="displayName" class="form-control" id="displayName" [ngClass]="fieldValidationClass('displayName')">
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('email', 'required')">Display Name required!</div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="email" class="col-md-2 col-form-label align-top required">Email </label>
+                  <div class="col-md-10">
+                    <input type="text" formControlName="email" class="form-control" id="email" [ngClass]="fieldValidationClass('email')">
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('email', 'required')">Email required!</div>
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('email', 'email')">Incorrect email format!</div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="firstName" class="col-md-2 col-form-label align-top required">First Name </label>
+                  <div class="col-md-10">
+                    <input type="text" formControlName="firstName" class="form-control" id="firstName" [ngClass]="fieldValidationClass('firstName')">
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('firstName', 'required')">First Name required!</div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="middleName" class="col-md-2 col-form-label align-top">Middle Name</label>
+                  <div class="col-md-10">
+                    <input type="text" formControlName="middleName" class="form-control" id="middleName" [ngClass]="fieldValidationClass('middleName')">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="lastName" class="col-md-2 col-form-label align-top required">Last Name </label>
+                  <div class="col-md-10">
+                    <input type="text" formControlName="lastName" class="form-control" id="lastName" [ngClass]="fieldValidationClass('lastName')">
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('lastName', 'required')">Last Name required!</div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="enabled" class="col-sm-2 col-form-label align-top">Active</label>
+                  <div class="col-sm-10">
+                    <div class="form-control-plaintext">
+                      <label class="switch switch-pill switch-info mb-0">
+                        <input class="switch-input" formControlName="enabled" type="checkbox">
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                    <i class="help-block" *ngIf="isAdmin()">Administrator can not be disabled.</i>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="authority" class="col-md-2 col-form-label align-top">Roles</label>
+                  <div class="col-md-10">
+                    <ng-select [items]="roles" [multiple]="true" [hideSelected]="true" formControlName="roles" bindValue="id" bindLabel="name">
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr *ngIf="profileMode">
+          <div class="row" *ngIf="profileMode">
+            <div class="col-md-2">
+              <h4>Additional settings</h4>
+              <p>
+                Settings for SecureSKYE's feature.
+              </p>
+            </div>
+            <div class="col-md-10">
+              <div class="form-group row" *ngIf="user">
+                <label class="col-9 col-sm-5 col-md-4 col-xl-3 col-form-label">2-Factor Authentication
+                  <span class="form-text" *ngIf="user.tfa == 1" dropdown>
+                    <button type="button" class="btn btn-link" dropdownToggle>More...</button>
+                    <ul *dropdownMenu class="dropdown-menu" role="menu">
+                      <li role="menuitem">
+                        <button type="button" class="dropdown-item" (click)="removeOtpAccess()">Remove all recent devices</button>
+                        <button type="button" class="dropdown-item" (click)="reset2Fa()">Reset 2-Factor Authenticator</button>
+                      </li>
+                    </ul>
+                  </span>
+                  <span class="badge badge-warning text-uppercase" *ngIf="user.tfa == 2">VERIFICATION PENDING</span>
+                </label>
+                <div class="col-3 col-sm-7 col-md-8 col-xl-9">
+                  <div class="form-control-plaintext">
+                    <label class="switch switch-pill mb-0 float-right float-sm-left" [class.switch-success]="user.tfa == 1" [class.disabled]="tfaProcessing"
+                      (click)="switch2FactorAuthentication(); false;">
+                      <input class="switch-input" [checked]="user.tfa == 1 || user.tfa == 2" type="checkbox">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-5 col-md-4 col-xl-3 col-form-label align-top">Notifications</label>
+                <div class="col-sm-7 col-md-8 col-xl-9">
+                  <div class="aside-options" *ngFor="let sub of userSubscriptions">
+                    <div class="clearfix">
+                      <b>{{sub.topic.name}}</b>
+                      <label class="switch switch-pill switch-success float-right mb-0">
+                        <input type="checkbox" class="switch-input" [(ngModel)]="sub.checked">
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                    <div>
+                      <small class="text-muted">{{sub.topic.description}}</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <button type="button" class="btn btn-success group-fix" *ngIf="!userId" (click)="registerUser()">Register</button>
+          <button type="button" class="btn btn-success group-fix" *ngIf="userId" (click)="updateUser()">Update</button>
+          <button type="button" class="btn btn-danger group-fix" *ngIf="userId && !profileMode && !isAdmin()" (click)="showConfirmDialog()">Remove</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Avatar cropper modal -->
+<div class="modal fade" bsModal #avatarCropperModal="bs-modal" [config]="{backdrop: 'static'}" tabindex="-1" role="dialog"
+  aria-labelledby="avatarCropperModal" (onHide)="cancelUpdateAvatar()">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title pull-left">Avatar</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="avatarCropperModal.hide()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body p-0">
+        <img-cropper #avatarCropper [image]="avatarCropperData" [settings]="avatarCropperSettings"></img-cropper>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="avatarCropperModal.hide()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="updateAvatar(); avatarCropperModal.hide();" #avatarCropperOkBtn>OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Avatar 3rd party modal -->
+<div class="modal fade" bsModal #avatar3rdPartyModal="bs-modal" [config]="{backdrop: 'static'}" tabindex="-1" role="dialog"
+  aria-labelledby="avatar3rdPartyModal" (onHide)="cancelUpdateAvatar()">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title pull-left">Avatar</h4>
+        <button type="button" class="close pull-right" aria-label="Close" (click)="avatar3rdPartyModal.hide()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body ">
+        <div class="form-group">
+          <label>Enter your
+            <span class="text-uppercase">{{avatar3rdParty}}</span> ID</label>
+          <input type="text" class="form-control" [(ngModel)]="avatar3rdPartyId" #avatar3rdPartyIdInput>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="avatar3rdPartyModal.hide()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="updateAvatar3rdParty(); avatar3rdPartyModal.hide();">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+<app-otp-dialog #otpDialog></app-otp-dialog>

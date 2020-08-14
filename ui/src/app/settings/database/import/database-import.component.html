@@ -1,0 +1,43 @@
+<div class="animated fadeIn">
+    <div class="card">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-5">
+            <h3 class="card-title mb-0">Import</h3>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-12">
+            <div class="box has-advanced-upload file-drop-zone" ng2FileDrop [ngClass]="{'nv-file-over': hasBaseDropZoneOver}" (click)="importFile.click()"
+              (fileOver)="fileOverBase($event)" [uploader]="uploader" (onFileDrop)="dropFile($event)" style="cursor: pointer; z-index: 100">
+              <div class="box__input">
+                <i class="box__icon fa fa-upload fa-4x"></i>
+                <br>
+                <input #importFile id="importFile" class="box__file" type="file" (change)="onFileChange()" ng2FileSelect [uploader]="uploader"
+                  (onFileSelected)="selectFile($event)" />
+                <label style="cursor: pointer" *ngIf="!hasSelectedFile()">
+                  <strong>Choose a file</strong>
+                  <span> or drag it here</span>.
+                </label>
+                <label style="cursor: pointer" *ngIf="hasSelectedFile()">
+                  <strong>{{uploader.queue[0].file.name}}</strong>
+                </label>
+                <button type="button" class="box__button" (click)="uploader.uploadAll();$event.cancelBubble=true;" [disabled]="!uploader.queue[0] || uploader.queue[0].isUploaded || uploader.queue[0].isUploading">Import</button>
+              </div>
+              <div *ngIf="uploader.isUploading">Importing&hellip;</div>
+              <div *ngIf="uploader.queue.length>0&&uploader.queue[0].isSuccess">Imported!</div>
+              <div *ngIf="fileId">File ID: {{fileId}}</div>
+              <div *ngIf="errorMsg">Error!
+                <span>{{errorMsg}}</span>
+              </div>
+              <div *ngIf="uploader.isUploading || (uploader.queue[0] && uploader.queue[0].isSuccess)" class="progress" style="margin: 30px auto 0;">
+                <div class="progress-bar" role="progressbar" [ngStyle]="{ 'width': uploader.progress + '%' }"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  

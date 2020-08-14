@@ -1,0 +1,39 @@
+<div class="animated fadeIn">
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-12">
+          <h3 class="card-title">Image Archives</h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Family</th>
+                  <th>Version</th>
+                  <th>Type</th>
+                  <th class="operation"></th>
+                </tr>
+              </thead>
+              <tbody *ngIf="archives">
+                <tr *ngFor="let item of archives | slice : (pageNo-1)*itemsPerPage : pageNo*itemsPerPage">
+                  <td class="family">{{ item.family }}</td>
+                  <td class="version">{{ item.version }}</td>
+                  <td class="updateType">{{ item.updateType }}</td>
+                  <td class="user-operation text-right">
+                    <a class="btn btn-secondary" [routerLink]="['..', item.id]">
+                      View</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <pagination *ngIf="archives" [totalItems]="archives.length" [(ngModel)]="pageNo" [maxSize]="6" [itemsPerPage]="itemsPerPage"></pagination>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

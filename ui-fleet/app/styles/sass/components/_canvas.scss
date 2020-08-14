@@ -1,0 +1,87 @@
+.speedometerChartDetail {
+  canvas {
+    position: relative;
+    text-align: center;
+    width: 100% !important;
+    height: 100% !important;
+    @media (max-height: 719px) {
+      // width: 200px !important;
+      height: 155px !important;
+    }
+    @media (min-height: 720px) and (max-height: 899px) {
+      // width: 200px !important;
+      height: 155px !important;
+    }
+    @media (min-height: 900px) and (max-height: 1079px) {
+      // width: 270px !important;
+      height: 200px !important;
+    }
+  }
+}
+
+.timeChartDetail {
+  canvas {
+    height: 300px !important;
+    width: 100% !important;
+    @media (max-height: 719px) {
+      height: 200px !important;
+    }
+    @media (min-height: 720px) and (max-height: 899px) {
+      height: 200px !important;
+    }
+    @media (min-height: 900px) and (max-height: 1079px) {
+      height: 250px !important;
+    }
+  }
+}
+
+.riskCurrentGauge {
+  canvas {
+    width: 100% !important;
+    height: 270px !important;
+    @media (max-height: 719px) {
+      height: 180px !important;
+    }
+    @media (min-height: 720px) and (max-height: 899px) {
+      height: 180px !important;
+    }
+    @media (min-height: 900px) and (max-height: 1079px) {
+      height: 230px !important;
+    }
+  }
+}
+
+.totalChart {
+  canvas {
+    width: 255px !important;
+    height: 255px !important;
+    @media (max-height: 719px) {
+      width: 180px !important;
+      height: 180px !important;
+    }
+    @media (min-height: 720px) and (max-height: 899px) {
+      width: 180px !important;
+      height: 180px !important;
+    }
+    @media (min-height: 900px) and (max-height: 1079px) {
+      height: 220px !important;
+      width: 220px !important;
+    }
+  }
+}
+
+.animaliesChart {
+  canvas {
+    width: 100% !important;
+    height: 333px !important;
+    @media (max-height: 719px) {
+      height: 220px !important;
+    }
+    @media (min-height: 720px) and (max-height: 899px) {
+      height: 220px !important;
+    }
+    @media (min-height: 900px) and (max-height: 1079px) {
+      height: 282px !important;
+    }
+  }
+}

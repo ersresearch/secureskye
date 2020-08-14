@@ -1,0 +1,6 @@
+{
+  "ApiGatewayUrl": "https://10.88.17.71",
+  "ApiNoderedUrl": "http://10.88.17.71:1880",
+  "SocketIOUrl": "http://10.88.17.71:3000",
+  "UrlPath": "/fleet-ui"
+}

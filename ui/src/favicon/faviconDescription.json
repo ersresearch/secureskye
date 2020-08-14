@@ -1,0 +1,58 @@
+{
+    "masterPicture": "../../src/favicon/favicon.png",
+    "iconsPath": "assets/favicon/",
+    "design": {
+        "ios": {
+            "pictureAspect": "backgroundAndMargin",
+            "backgroundColor": "#4d4d4d",
+            "margin": "14%",
+            "assets": {
+                "ios6AndPriorIcons": false,
+                "ios7AndLaterIcons": false,
+                "precomposedIcons": false,
+                "declareOnlyDefaultIcon": true
+            },
+            "appName": "SecureSKYE"
+        },
+        "desktopBrowser": {},
+        "windows": {
+            "pictureAspect": "noChange",
+            "backgroundColor": "#4d4d4d",
+            "onConflict": "override",
+            "assets": {
+                "windows80Ie10Tile": false,
+                "windows10Ie11EdgeTiles": {
+                    "small": false,
+                    "medium": true,
+                    "big": false,
+                    "rectangle": false
+                }
+            },
+            "appName": "SecureSKYE"
+        },
+        "androidChrome": {
+            "pictureAspect": "shadow",
+            "themeColor": "#4d4d4d",
+            "manifest": {
+                "name": "SecureSKYE",
+                "display": "standalone",
+                "orientation": "notSet",
+                "onConflict": "override",
+                "declared": true
+            },
+            "assets": {
+                "legacyIcon": false,
+                "lowResolutionIcons": false
+            }
+        },
+        "safariPinnedTab": {
+            "pictureAspect": "silhouette",
+            "themeColor": "#5bbad5"
+        }
+    },
+    "settings": {
+        "compression": 5,
+        "scalingAlgorithm": "Mitchell",
+        "errorOnImageTooSmall": false
+    }
+}

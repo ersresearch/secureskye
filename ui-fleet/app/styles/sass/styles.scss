@@ -1,0 +1,40 @@
+/* Styles Vendor */
+
+/* @import 'vendor/smartadmin-production.min'; */
+
+// @import 'vendor/smartadmin-production-plugins.min';
+// @import 'vendor/smartadmin-skins.min';
+// @import 'vendor/smartadmin-rtl.min';
+//
+// @import 'vendor/invoice.min';
+// @import 'vendor/lockscreen.min';
+//
+// @import 'vendor/demo.min';
+
+
+
+/* Styles Global */
+@import 'global/variable';
+@import 'global/utils';
+@import 'global/flexbox';
+@import 'global/mixin';
+@import 'global/global';
+@import 'global/font';
+
+
+/* Styles Components */
+@import 'components/component-button';
+@import 'components/vehicleupdate';
+@import 'components/total-vehicle-chart';
+@import 'components/total-vehicle-chart';
+@import 'components/react-table';
+@import 'components/not-found-page';
+@import 'components/map';
+@import 'components/vehicle-map';
+@import 'components/marker';
+@import 'components/vehicle-menu';
+@import 'components/canvas';
+@import 'components/vehicle-status-alert';
+@import 'components/vehicleMenu';
+@import 'components/vehicleManagement';
+@import 'components/input-date';

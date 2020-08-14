@@ -1,0 +1,371 @@
+.total-vehicle-chart {
+  width: 100%;
+  display: inline-flex;
+  .total-chart {
+    position: relative;
+    margin-left: 53px;
+    canvas {
+      width: 254px !important;
+      height: 254px !important;
+      position: inherit;
+    }
+    @media (max-height: 719px),
+    (max-width: 1279px) {
+      margin-left: 35px;
+      canvas {
+        width: 169px !important;
+        height: 169px !important;
+        position: inherit;
+      }
+    }
+    @media (min-height: 720px) and (max-height: 944px),
+    (min-width: 1280px) and (max-width: 1679px) {
+      margin-left: 35px;
+      canvas {
+        width: 169px !important;
+        height: 169px !important;
+        position: inherit;
+      }
+    }
+    @media (min-height: 945px) and (max-height: 1079px),
+    (min-width: 1680px) and (max-width: 1919px) {
+      margin-left: 46px;
+      canvas {
+        width: 222px !important;
+        height: 222px !important;
+        position: inherit;
+      }
+    }
+  }
+  .doughnut-summary {
+    position: absolute;
+    top: 46%;
+    @media (max-height: 719px), (max-width: 1279px) {
+      top: 43%;
+    }
+    @media (min-height: 720px) and (max-height: 944px),
+    (min-width: 1280px) and (max-width: 1679px) {
+      top: 43%;
+    }
+    @media (min-height: 945px) and (max-height: 1079px),
+    (min-width: 1680px) and (max-width: 1919px) {
+      top: 45%;
+    }
+    left: 50%;
+    cursor: default;
+    text-align: center !important;
+    transform: translate(-50%, -50%);
+    .doughnut-summary-title {
+      width: 100%;
+      color: #1C1C1C;
+      margin-top: 5px;
+      font-size: 18px;
+      @media (max-height: 719px), (max-width: 1279px) {
+        margin-top: 3px;
+        font-size: 12px;
+      }
+      @media (min-height: 720px) and (max-height: 944px),
+      (min-width: 1280px) and (max-width: 1679px) {
+        margin-top: 3px;
+        font-size: 12px;
+      }
+      @media (min-height: 945px) and (max-height: 1079px),
+      (min-width: 1680px) and (max-width: 1919px) {
+        margin-top: 4px;
+        font-size: 15.75px;
+      }
+      font-family: Helvetica_Medium;
+    }
+    .doughnut-summary-number {
+      width: 100%;
+      margin-top: 4px;
+      font-size: 28px;
+      @media (max-height: 719px), (max-width: 1279px) {
+        margin-top: 3px;
+        font-size: 19px;
+      }
+      @media (min-height: 720px) and (max-height: 944px),
+      (min-width: 1280px) and (max-width: 1679px) {
+        margin-top: 3px;
+        font-size: 19px;
+      }
+      @media (min-height: 945px) and (max-height: 1079px),
+      (min-width: 1680px) and (max-width: 1919px) {
+        margin-top: 3.5px;
+        font-size: 24.5px;
+      }
+      font-weight: bold;
+      color: black;
+      font-family: Helvetica_Bold;
+    }
+  }
+}
+
+.total-vehicle-detail {
+  margin-left: 35px;
+  margin-right: 50px;
+  @media (max-height: 719px), (max-width: 1279px) {
+    margin-right: 25px;
+    font-size: 19px;
+  }
+  @media (min-height: 720px) and (max-height: 944px),
+  (min-width: 1280px) and (max-width: 1679px) {
+    margin-right: 25px;
+    font-size: 19px;
+  }
+  @media (min-height: 945px) and (max-height: 1079px),
+  (min-width: 1680px) and (max-width: 1919px) {
+    margin-left: 31px;
+    margin-right: 43.75px;
+  }
+  width: 100%;
+  .legend {
+    .connected {
+      display: flex;
+      .lengend-color {
+        background-color: #15CD00;
+        width: 28px;
+        height: 6px;
+        margin: auto 10px auto 0;
+        @media (max-height: 719px), (max-width: 1279px) {
+          margin-right: 33px;
+          height: 4px;
+          margin: auto 7px auto 0;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          margin-right: 33px;
+          height: 4px;
+          margin: auto 7px auto 0;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          width: 24.5px;
+          height: 5.25px;
+          margin: auto 8.75px auto 0;
+        }
+      }
+      .legend-title {
+        display: inline-block;
+        font-size: 16px;
+        @media (max-height: 719px), (max-width: 1279px) {
+          font-size: 11px;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          font-size: 11px;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          font-size: 14px;
+        }
+        font-weight: lighter;
+        color: #1C1C1C;
+      }
+    }
+    .disconnected {
+      display: flex;
+      .lengend-color {
+        background-color: #888;
+        width: 28px;
+        height: 6px;
+        margin: auto 10px auto 0;
+        @media (max-height: 719px), (max-width: 1279px) {
+          margin-right: 33px;
+          height: 4px;
+          margin: auto 7px auto 0;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          margin-right: 33px;
+          height: 4px;
+          margin: auto 7px auto 0;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          width: 24.5px;
+          height: 5.25px;
+          margin: auto 8.75px auto 0;
+        }
+        display: inline-block;
+      }
+      .legend-title {
+        display: inline-block;
+        font-size: 16px;
+        @media (max-height: 719px), (max-width: 1279px) {
+          font-size: 11px;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          font-size: 11px;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          font-size: 14px;
+        }
+        font-weight: lighter;
+        color: #1C1C1C;
+      }
+    }
+  }
+  .detail {
+    margin-top: 65px;
+    @media (max-height: 719px), (max-width: 1279px) {
+      margin-top: 43px;
+    }
+    @media (min-height: 720px) and (max-height: 944px),
+    (min-width: 1280px) and (max-width: 1679px) {
+      margin-top: 43px;
+    }
+    @media (min-height: 945px) and (max-height: 1079px),
+    (min-width: 1680px) and (max-width: 1919px) {
+      margin-top: 57px;
+    }
+    .total {
+      padding-bottom: 3px;
+      border-bottom: 2px solid #3f3f3f;
+      color: #1C1C1C;
+      font-weight: bold;
+      .title {
+        display: inline-block;
+        width: 30%;
+        font-size: 16px;
+        @media (max-height: 719px), (max-width: 1279px) {
+          font-size: 11.5px;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          font-size: 11.5px;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          font-size: 13.5px;
+        }
+        font-family: Helvetica_Medium,
+      }
+      .data {
+        font-size: 22px;
+        @media (max-height: 719px), (max-width: 1279px) {
+          font-size: 13px;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          font-size: 13px;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          font-size: 19px;
+        }
+        font-family: Helvetica_Medium;
+        width: 70%;
+        text-align: right;
+        display: inline-block;
+      }
+    }
+    .connected {
+      margin-top: 12px;
+      @media (max-height: 719px), (max-width: 1279px) {
+        margin-top: 8px;
+      }
+      @media (min-height: 720px) and (max-height: 944px),
+      (min-width: 1280px) and (max-width: 1679px) {
+        margin-top: 8px;
+      }
+      @media (min-height: 945px) and (max-height: 1079px),
+      (min-width: 1680px) and (max-width: 1919px) {
+        margin-top: 10.5px;
+      }
+      padding-bottom: 3px;
+      border-bottom: 1px solid #8e8e8e;
+      color: #18CC00;
+      font-weight: bold;
+      .title {
+        width: 30%;
+        display: inline-block;
+        font-size: 16px;
+        @media (max-height: 719px), (max-width: 1279px) {
+          font-size: 11.5px;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          font-size: 11.5px;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          font-size: 13.5px;
+        }
+        font-family: Helvetica_Medium,
+      }
+      .data {
+        font-size: 22px;
+        @media (max-height: 719px), (max-width: 1279px) {
+          font-size: 13px;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          font-size: 13px;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          font-size: 19px;
+        }
+        font-family: Helvetica_Medium;
+        width: 70%;
+        text-align: right;
+        display: inline-block;
+      }
+    }
+    .disconnected {
+      margin-top: 12px;
+      @media (max-height: 719px), (max-width: 1279px) {
+        margin-top: 8px;
+      }
+      @media (min-height: 720px) and (max-height: 944px),
+      (min-width: 1280px) and (max-width: 1679px) {
+        margin-top: 8px;
+      }
+      @media (min-height: 945px) and (max-height: 1079px),
+      (min-width: 1680px) and (max-width: 1919px) {
+        margin-top: 10.5px;
+      }
+      padding-bottom: 3px;
+      border-bottom: 1px solid #7a7a7a;
+      color: #707070;
+      font-weight: bold;
+      font-family: Helvetica_Medium;
+      .title {
+        width: 30%;
+        display: inline-block;
+        font-size: 16px;
+        @media (max-height: 719px), (max-width: 1279px) {
+          font-size: 11.5px;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          font-size: 11.5px;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          font-size: 13.5px;
+        }
+      }
+      .data {
+        font-size: 22px;
+        @media (max-height: 719px), (max-width: 1279px) {
+          font-size: 13px;
+        }
+        @media (min-height: 720px) and (max-height: 944px),
+        (min-width: 1280px) and (max-width: 1679px) {
+          font-size: 13px;
+        }
+        @media (min-height: 945px) and (max-height: 1079px),
+        (min-width: 1680px) and (max-width: 1919px) {
+          font-size: 19px;
+        }
+        width: 70%;
+        text-align: right;
+        display: inline-block;
+      }
+    }
+  }
+}

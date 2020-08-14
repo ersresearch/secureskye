@@ -1,0 +1,5669 @@
+openapi: 3.0.0
+info:
+  title: SecureSKYE
+  description: ''
+  version: 1.0.0
+servers:
+  - url: secureskye-demo.trilliumsecure.com/api
+  - url: 192.168.10.220/api
+tags:
+  - name: ie-main
+    description: Import/Export operations
+  - name: ixs-main
+    description: IXS (Intrusion Detection System) operations
+  - name: licensing-main
+    description: Licensing operations
+  - name: notification-main
+    description: User notification operations
+  - name: ota-vehicle
+    description: Operations about OTA (Over The Air) updates for vehicles
+  - name: user-admin
+    description: User administration operations
+  - name: user-settings
+    description: User settings operations
+  - name: vehicle-admin
+    description: Vehicle administration operations
+  - name: vehicle-message
+    description: Operations about storing messages and events for vehicles
+  - name: vehicle-registry
+    description: Operations about self information registration for vehicles
+  - name: obd2device-admin
+    description: Operataions about managing OBD-II devices
+  - name: obd2device-event
+    description: Operataions about handle events from OBD-II devices
+  - name: socket-api
+    description: /ws/vehicle/message
+paths:
+  '/ie/exports':
+    get:
+      tags:
+        - ie-main
+      operationId: exportDataNotify
+      description: >-
+        Start an asynchronous export of all data. When the export is finished,
+        the user who started it will get a notification with the download link.
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'ie:read'
+  '/ie/exports/direct':
+    get:
+      tags:
+        - ie-main
+      operationId: exportData
+      description: >-
+        Download all or parts of the services data directly. The exported data
+        can be limited to specific a specific time range, vehicles and fields
+        (for example only GPS events). Also, the format can be selected.
+        Omitting any of the filtering options means to not apply this filter but
+        instead list all. One or multiple filters can be sepcified in one
+        request.
+      parameters:
+        - name: format
+          in: query
+          description: The format in which the data will be exported.
+          schema:
+            type: string
+            enum:
+              - json
+              - xml
+              - yaml
+            default: json
+        - name: begin
+          in: query
+          description: A start timestamp from which events will be exported.
+          schema:
+            type: integer
+            format: int64
+            default: 0
+        - name: end
+          in: query
+          description: The end timestamp to limit data entries to.
+          schema:
+            type: integer
+            format: int64
+            default: 9223372036854776000
+        - name: vehicleIds
+          in: query
+          description: One or more vehicles to limit the data to.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UUID'
+          style: form
+          explode: false
+        - name: fieldName
+          in: query
+          description: >-
+            One or more fields to limit the exported data to. This currently
+            only includes vehicle events and raw messages.
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - battery
+                - can_bus
+                - fuel
+                - gear
+                - gps
+                - gps_route
+                - odometer
+                - rpm
+                - speed
+                - wheel
+                - ambient
+                - code
+                - control
+                - enginecool
+                - engineload
+                - engineruntime
+                - fuellevel
+                - intake
+                - massair
+                - milstatus
+                - throttle
+                - trouble
+                - vin
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+      security:
+        - webapp_auth:
+            - 'ie:read'
+  '/ie/exports/{id}':
+    get:
+      tags:
+        - ie-main
+      operationId: downloadExportData
+      description: >-
+        Download a previously started export that is ready now. A link to this
+        endpoint is usualy sent to the user after an asynchronous export
+        finished.
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of an export task.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  '/ie/imports':
+    post:
+      tags:
+        - ie-main
+      operationId: importData
+      description: >-
+        Import a previously exported data archive back into the service. This is
+        meant for full backup/restore tasks, thus being an administrative task.
+      parameters:
+        - name: format
+          in: query
+          description: Format of the data in the provided archive.
+          required: true
+          schema:
+            type: string
+            enum:
+              - json
+              - xml
+              - yaml
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'ie:create'
+  '/notifications':
+    post:
+      tags:
+        - notification-main
+      operationId: notifyAll
+      description: Send a notification to one specific user or all users in the system.
+      parameters:
+        - name: all
+          in: query
+          description: >-
+            To send to all or just one user(s). If this is `true`, the
+            `recipient` field in the request body is ignored.
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'notification:create'
+  '/notifications/subscriptions':
+    get:
+      tags:
+        - notification-main
+      operationId: listUserSubscriptions
+      description: List all notification subscriptions of the current logged in user.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionList'
+      security:
+        - webapp_auth:
+            - 'subscription:read'
+  '/notifications/subscriptions/{channel}':
+    get:
+      tags:
+        - notification-main
+      operationId: listUserSubscriptionsByChannel
+      description: List notification for a single channel of the current user.
+      parameters:
+        - name: channel
+          in: path
+          description: The channel (e.g. Email) to list subscriptions for.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ChannelTypeString'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionList'
+      security:
+        - webapp_auth:
+            - 'subscription:read'
+    post:
+      tags:
+        - notification-main
+      operationId: subscribeToChannel
+      description: Subscribe to one or more topics on a specific channel.
+      parameters:
+        - name: channel
+          in: path
+          description: Channel to subscribe on.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ChannelTypeString'
+        - name: topics
+          in: query
+          description: List of IDs for the topics to subscribe to.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UUID'
+          style: form
+          explode: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionList'
+      security:
+        - webapp_auth:
+            - 'subscription:create'
+    delete:
+      tags:
+        - notification-main
+      operationId: unsubscribeFromChannel
+      description: Unsubscribe to a single or multiple topics on a specific channel.
+      parameters:
+        - name: channel
+          in: path
+          description: The channel to unsubscribe on.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ChannelTypeString'
+        - name: topics
+          in: query
+          description: IDs of topics to unsubscribe from.
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UUID'
+          style: form
+          explode: false
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'subscription:delete'
+  '/notifications/subscriptions/topics':
+    get:
+      tags:
+        - notification-main
+      operationId: listSubscriptionTopics
+      description: List all available topics that the current user can subscribe to.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicList'
+      security:
+        - webapp_auth:
+            - 'subscription:read'
+  '/notifications/subscriptions/channels':
+    get:
+      tags:
+        - notification-main
+      operationId: listSubscriptionChannels
+      description: List all channel the current user can subscribe on.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelList'
+      security:
+        - webapp_auth:
+            - 'subscription:read'
+  '/internal/notifications':
+    post:
+      tags:
+        - notification-main
+      operationId: notifyAllInternal
+      description: Internal version of `/notifications` for sending notifications.
+      parameters:
+        - name: all
+          in: query
+          description: >-
+            To send to all or just one user(s). If this is `true`, the
+            `recipient` field in the request body is ignored.
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'notification:create'
+
+  '/ota':
+    post:
+      tags:
+        - ota-vehicle
+      operationId: uploadOtaPackage
+      description: >-
+        Upload a new OTA package to be distributed to vehicles. This is only the
+        upload itself. The package has to be published after the upload to
+        initiate the actual distribution.
+      parameters:
+        - in: header
+          name: name
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+      security:
+        - webapp_auth:
+            - 'ota-images:create'
+  '/ota/{id}/publish':
+    put:
+      tags:
+        - ota-vehicle
+      operationId: publishOtaPackage
+      description: >-
+        Publish an already uploaded image, starting the distribution to
+        applicable vehicles.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the OTA package to publish.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'ota-images:update'
+  '/ota/images/{id}':
+    get:
+      tags:
+        - ota-vehicle
+      operationId: downloadOtaImage
+      description: >-
+        Download a single binary image with is part of a whole OTA package.
+        Vehicle clients can only download images they are applicable for.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the binary image. This can be found in the metadata.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+      security:
+        - vehicle_auth:
+            - 'ota-images:read'
+        - webapp_auth:
+            - 'ota-images:read'
+  '/ota/metadata':
+    get:
+      tags:
+        - ota-vehicle
+      operationId: listOtaMetadata
+      description: >-
+        List all metadata that was ever uploaded. It can be filtered by vehicle
+        families (models) or filter out older versions. Vehicle clients can only
+        list the metadata they are applicable for.
+      parameters:
+        - name: family
+          in: query
+          description: Optional filter to limit to a single vehicle family (model).
+          schema:
+            type: string
+        - name: fromVersion
+          in: query
+          description: >-
+            Optional filter to only list metadata that is newer than the given
+            version. This field follows semantic versioning.
+          schema:
+            $ref: '#/components/schemas/SemVer'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Metadata'
+      security:
+        - vehicle_auth:
+            - 'ota-images:read'
+        - webapp_auth:
+            - 'ota-images:read'
+  '/ota/metadata/{id}':
+    get:
+      tags:
+        - ota-vehicle
+      operationId: getOtaMetadata
+      description: >-
+        Get metadata information for a single OTA package. Vehicle clients can
+        only download metadata they are applicable for.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the OTA package.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metadata'
+      security:
+        - vehicle_auth:
+            - 'ota-images:read'
+        - webapp_auth:
+            - 'ota-images:read'
+    delete:
+      tags:
+        - ota-vehicle
+      operationId: deleteOtaMetadata
+      description: >-
+        Delete a already uploaded OTA package. This is only possible if it
+        hasn't been published yet.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the OTA package.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'ota-images:delete'
+  '/ota/statistics':
+    get:
+      tags:
+        - ota-vehicle
+      operationId: getOtaStatistics
+      description: Several statistics about OTA packages. Intended for use in dashboards.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtaStatistics'
+      security:
+        - webapp_auth:
+            - 'ota-images:read'
+  '/users':
+    post:
+      tags:
+        - user-admin
+      operationId: createUser
+      description: Create a new user in the service.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credential'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credential'
+      security:
+        - webapp_auth:
+            - 'user:create'
+    get:
+      tags:
+        - user-admin
+      operationId: listUsers
+      description: >-
+        List all existing users in the system. A filter by username can be
+        applied to search for specific users.
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: Optional name to find a single user.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Credential'
+      security:
+        - webapp_auth:
+            - 'user:read'
+  '/users/{id}':
+    get:
+      tags:
+        - user-admin
+      operationId: getUser
+      description: Get a single user by its ID.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the user to retrieve.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credential'
+      security:
+        - webapp_auth:
+            - 'user:read'
+    patch:
+      tags:
+        - user-admin
+      operationId: updateUser
+      description: Update one or more details about a single user.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the user to update.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credential'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credential'
+      security:
+        - webapp_auth:
+            - 'user:update'
+    delete:
+      tags:
+        - user-admin
+      operationId: deleteUser
+      description: Completely delete a user from the system.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the user to delete.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'user:delete'
+  '/users/{id}/avatar':
+    get:
+      tags:
+        - user-admin
+      operationId: getUserAvatar
+      description: Get the avatar (profile image) of a specific user.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the user to get the avatar for.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  '/users/authorities':
+    get:
+      tags:
+        - user-admin
+      operationId: listAuthorities
+      description: List all available authorities that can be assigned to a role.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuthorityList'
+      security:
+        - webapp_auth:
+            - 'authority:read'
+  '/users/roles':
+    get:
+      tags:
+        - user-admin
+      operationId: listRoles
+      description: List all available roles that can be assigned to users.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RoleSet'
+      security:
+        - webapp_auth:
+            - 'role:read'
+    post:
+      tags:
+        - user-admin
+      operationId: createRole
+      description: Create a new role with one or more authorities assigned to it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+      security:
+        - webapp_auth:
+            - 'role:create'
+  '/users/roles/{id}':
+    get:
+      tags:
+        - user-admin
+      operationId: getRole
+      description: Get a single role and assigned authorities.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the role to get.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+      security:
+        - webapp_auth:
+            - 'role:read'
+    delete:
+      tags:
+        - user-admin
+      operationId: deleteRole
+      description: Delete a single role.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the role to delete.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'role:delete'
+    patch:
+      tags:
+        - user-admin
+      operationId: updateRole
+      description: 'Update a single role, changing its name and/or authorities.'
+      parameters:
+        - name: id
+          in: path
+          description: identifier of the role to modify.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+      security:
+        - webapp_auth:
+            - 'role:update'
+  '/users/2fa':
+    delete:
+      tags:
+        - user-admin
+      operationId: disableUserTwoFactorAuth
+      description: >-
+        Disable the 2 factor authentication for the currently logged in user.
+        This fails if 2FA isn't enabled.
+      parameters:
+        - name: oauthId
+          in: query
+          description: The current OAuth ID of the logged in user.
+          required: true
+          schema:
+            type: string
+        - name: scratchCode
+          in: query
+          description: One of the scratch codes that were given during 2FA registration.
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - ''
+  '/users/me':
+    get:
+      tags:
+        - user-admin
+      operationId: getCurrentUser
+      description: Get basic information about the current user.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credential'
+      security:
+        - webapp_auth:
+            - ''
+  '/users/statistics':
+    get:
+      tags:
+        - user-admin
+      operationId: getUserStatistics
+      description: >-
+        Get statistical information about users. This is intended for
+        dashboards.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserStatistics'
+      security:
+        - webapp_auth:
+            - 'user:read'
+  '/internal/users':
+    get:
+      tags:
+        - user-admin
+      operationId: listUsersInternal
+      description: Internal endpoint for listing all existing users.
+      parameters:
+        - name: name
+          in: query
+          schema:
+            type: string
+          description: Optional name to find a single user
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CredentialList'
+      security:
+        - webapp_auth:
+            - 'user:read'
+  '/internal/users/{value}':
+    get:
+      tags:
+        - user-admin
+      operationId: getUserInternal
+      description: Internal endpoint to get a single user by either ID or name.
+      parameters:
+        - name: value
+          in: path
+          description: >-
+            The value to get a user by. This depends on the `field` query
+            parameter.
+          required: true
+          schema:
+            type: string
+        - name: field
+          in: query
+          description: >-
+            Define which value is represented in the `value` query parameter,
+            effectively choosing how to search a user.
+          schema:
+            type: string
+            enum:
+              - id
+              - name
+            default: id
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Credential'
+      security:
+        - webapp_auth:
+            - 'user:read'
+  '/users/{id}/settings/units':
+    get:
+      tags:
+        - user-settings
+      operationId: getUserUnitSettings
+      description: >-
+        Get a single user's unit related settings like temperature, distance and
+        others.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the user.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitSettings'
+      security:
+        - webapp_auth:
+            - 'user-settings:read'
+    put:
+      tags:
+        - user-settings
+      operationId: setUserUnitSettingsBySystem
+      description: Set all unit settings of a user at once by the given unit system.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the user.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: system
+          in: query
+          description: The unit system to apply for all unit settings.
+          required: true
+          schema:
+            type: string
+            enum:
+              - Metric
+              - Imperial
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitSettings'
+      security:
+        - webapp_auth:
+            - 'user-settings:update'
+    patch:
+      tags:
+        - user-settings
+      operationId: updateUserUnitSettings
+      description: Set one ore more unit settings of a user.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the user.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnitSettings'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitSettings'
+      security:
+        - webapp_auth:
+            - 'user-settings:update'
+  '/me/settings/units':
+    get:
+      tags:
+        - user-settings
+      operationId: getCurrentUserUnitSettings
+      description: >-
+        Get the current user's unit related settings like temperature, distance
+        and others.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitSettings'
+      security:
+        - webapp_auth:
+            - 'user-settings:read'
+    put:
+      tags:
+        - user-settings
+      operationId: setCurrentUserUnitSettingsBySystem
+      description: >-
+        Set all unit settings of the current user at once by the given unit
+        system.
+      parameters:
+        - name: system
+          in: query
+          description: The unit system to apply for all unit settings.
+          required: true
+          schema:
+            type: string
+            enum:
+              - Metric
+              - Imperial
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitSettings'
+      security:
+        - webapp_auth:
+            - 'user-settings:update'
+    patch:
+      tags:
+        - user-settings
+      operationId: updateCurrentUserUnitSettings
+      description: Set one ore more unit settings of the current user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnitSettings'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnitSettings'
+      security:
+        - webapp_auth:
+            - 'user-settings:update'
+  /vehicles:
+    get:
+      tags:
+        - vehicle-admin
+      operationId: listVehicles
+      description: List all vehicles registered in the system.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleList'
+      security:
+        - webapp_auth:
+            - 'vehicle:read'
+    post:
+      tags:
+        - vehicle-admin
+      operationId: createVehicle
+      description: Register a new vehicle with the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewVehicle'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisteredVehicle'
+      security:
+        - webapp_auth:
+            - 'vehicle:create'
+  '/vehicles/{id}':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getVehicle
+      description: Get a single specific vehicle.
+      parameters:
+        - name: id
+          in: path
+          description: >-
+            Identifier of the vehicle to retrieve. This can also be the vehicles
+            client ID.
+          required: true
+          schema:
+            type: string
+            pattern: ^(?!\s*$).+
+        - name: clientId
+          in: query
+          description: Wherether the provided ID is the direct vehicle ID or its client ID.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+      security:
+        - webapp_auth:
+            - 'vehicle:read'
+    delete:
+      tags:
+        - vehicle-admin
+      operationId: deleteVehicle
+      description: Delete a single vehicle from the system.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle to delete.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle:delete'
+  '/vehicles/{id}/rename':
+    put:
+      tags:
+        - vehicle-admin
+      operationId: renameVehicle
+      description: Change a vehicle's name.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle to rename.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: newName
+          in: query
+          description: The new name of the vehicle.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle:update'
+  '/vehicles/{id}/image':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getVehicleImage
+      description: Get vehicle image by vehicle Id.
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+      security:
+        - webapp_auth:
+            - 'vehicle:read'
+    patch:
+      tags:
+        - vehicle-admin
+      operationId: uploadVehicleImage
+      description: Upload vehicle image by vehicle Id.
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle:update'
+  '/vehicles/{id}/2fa':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getVehicleTfaPendingInfo
+      description: Get the pending information of the vehicle's 2 factor authentication.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle to get the 2FA information for.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTOTP'
+      security:
+        - webapp_auth:
+            - 'vehicle:read'
+    post:
+      tags:
+        - vehicle-admin
+      operationId: registerVehicleTfa
+      description: Register 2 factor authentication for a vehicle.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle to enable 2FA for.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: oauthGroup
+          in: query
+          description: An optional group to enable bulk operations on 2FA later.
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTOTP'
+      security:
+        - webapp_auth:
+            - 'vehicle:create'
+    put:
+      tags:
+        - vehicle-admin
+      operationId: confirmVehicleTfa
+      description: Confirm a pending 2 factor authentication registration fo a vehicle.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle to confirm 2FA for.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: otp
+          in: query
+          description: A one time password to verify that 2FA is setup properly.
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TwoFactorAuthenticationStatus'
+      security:
+        - webapp_auth:
+            - 'vehicle:update'
+    delete:
+      tags:
+        - vehicle-admin
+      operationId: unregisterVehicleTfa
+      description: |
+        Disable TFA in one of several ways.
+
+        * With no parameters an already disabled TFA can be completely
+        unregistered.
+
+        * The TFA can also be unregistered by providing either an `otp` or a
+        `scratchCode` (but not both), if the TFA is still enabled.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle to unregister from 2FA.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: otp
+          in: query
+          description: A one time password to authorize the unregistration.
+          schema:
+            type: integer
+            format: int32
+        - name: scratchCode
+          in: query
+          description: >-
+            A scratch code that was provided during 2FA registration. This can
+            not be used in conjunction with the `otp` parameter.
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle:delete'
+  '/vehicles/makers':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: listVehicleMaker
+      description: List all available vehicle makers in the system.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleMakerList'
+      security:
+      - webapp_auth:
+        - 'vehicle-model:read'
+    post:
+      tags:
+      - vehicle-admin
+      operationId: createVehicleMaker
+      description: Register a new vehicle maker in the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              pattern: ^(?!\s*$).+
+              description: The name of this new makers.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleMaker'
+      security:
+      - webapp_auth:
+        - 'vehicle-model:create'
+  '/vehicles/makers/{id}':
+    get:
+      tags:
+      - vehicle-admin
+      operationId: getVehicleMaker
+      description: Get a single vehicle maker.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the maker to get.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleMaker'
+      security:
+      - webapp_auth:
+        - 'vehicle-model:read'
+    put:
+      tags:
+        - vehicle-admin
+      operationId: renameVehicleMaker
+      description: Rename an existing vehicle maker.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle maker to rename.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleMaker'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle-model:update'
+    delete:
+      tags:
+        - vehicle-admin
+      operationId: deleteVehicleMaker
+      description: Delete a single vehicle maker from the system.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the maker to delete.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+      - webapp_auth:
+        - 'vehicle-model:delete'
+  '/vehicles/models':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: listVehicleModels
+      description: List all available vehicle models in the system.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleModelList'
+      security:
+        - webapp_auth:
+            - 'vehicle-model:read'
+    post:
+      tags:
+        - vehicle-admin
+      operationId: createVehicleModel
+      description: Register a new vehicle model in the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleModel'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleModel'
+      security:
+        - webapp_auth:
+            - 'vehicle-model:create'
+  '/vehicles/models/{id}':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getVehicleModel
+      description: Get a single vehicle model.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the model to get.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleModel'
+      security:
+        - webapp_auth:
+            - 'vehicle-model:read'
+    put:
+      tags:
+        - vehicle-admin
+      operationId: renameVehicleModel
+      description: Rename an existing vehicle model.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle model to rename.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleModel'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle-model:update'
+    delete:
+      tags:
+        - vehicle-admin
+      operationId: deleteVehicleModel
+      description: Delete a single vehicle model from the system.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the model to delete.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle-model:delete'
+  '/vehicles/models/{id}/tfa':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getVehicleModelTfaList
+      description: List the 2 factor authentication of a vehicles with the vehicle model.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle model.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OAuthTOTPList'
+      security:
+        - webapp_auth:
+            - 'vehicle-model:read'
+    put:
+      tags:
+        - vehicle-admin
+      operationId: updateVehicleModelTfaList
+      description: >-
+        Update the 2 factor authentication information for all vehicles with the
+        vehicle model.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle model.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OAuthTOTPList'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OAuthTOTPList'
+      security:
+        - webapp_auth:
+            - 'vehicle-model:update'
+    delete:
+      tags:
+        - vehicle-admin
+      operationId: disableVehicleModelTfa
+      description: >-
+        Delete all 2 factor authentications of the vehicles with the vehicle
+        model.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle model.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle-model:update'
+  '/vehicles/models/{id}/settings':
+    put:
+      tags:
+        - vehicle-admin
+      operationId: setDisplaySettings
+      description: Set display settings by model Id.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle model.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelDisplaySettings'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle-model:update'
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getDisplaySettings
+      description: Get display settings by model Id.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle model.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ModelDisplaySettings'
+      security:
+        - webapp_auth:
+          - 'vehicle-model:read'
+  '/vehicles/search':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: searchByCustomParameter
+      description: Search by custom parameter
+      parameters:
+        - name: search
+          in: query
+          description: Unknow
+          required: true
+          schema:
+            default: ''
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Vehicle'
+      security:
+        - webapp_auth:
+            - 'vehicle:read'
+  '/vehicles/statistics':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getVehicleStatistics
+      description: >-
+        Get statistical information about vehicles. This is intended for
+        dashboards.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleStatistics'
+      security:
+        - webapp_auth:
+            - 'vehicle:read'
+  '/vehicles/security-setting':
+    post:
+      tags:
+        - vehicle-admin
+      operationId: onOffSecurity
+      description: Function for enable/disable vehicle security detail.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  $ref: '#/components/schemas/UUID'
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecuritySettingConfig'
+  '/vehicles/security/{id}':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getSecurity
+      description: Get a security by id
+      parameters:
+        - name: id
+          in: path
+          description: >-
+            Identifier of the security to get information about.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleSecurity'
+  '/vehicles/{id}/security-status':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getSecurityStatus
+      description: Get all security status by vehicle id
+      parameters:
+        - name: id
+          in: path
+          description: >-
+            Identifier of the security to get information about.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleSecurityList'
+  '/vehicles/{id}/security-software':
+    post:
+      tags:
+        - vehicle-admin
+      operationId: onOffSecuritySoftware
+      description: Function for enable/disable vehicle security.
+      parameters:
+        - name: id
+          in: path
+          description: >-
+            Identifier of the security to get information about.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleSecurity'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VehicleSecurity'
+  '/internal/vehicles/{id}':
+    get:
+      tags:
+        - vehicle-admin
+      operationId: getVehicleInternal
+      description: Internal endpoint for getting information about a single vehicle.
+      parameters:
+        - name: id
+          in: path
+          description: >-
+            Identifier of the vehicle to get information about. Or client ID of
+            the vehicle.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: clientId
+          in: query
+          description: Wherether the provided ID is the direct vehicle ID or its client ID.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+      security:
+        - webapp_auth:
+            - 'vehicle:read'
+  '/internal/vehicles/{id}/alert-count':
+    put:
+      tags:
+        - vehicle-admin
+      operationId: updateAlertCount
+      description: Update vehicle internal alert count by vehicle Id
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleAlertCount'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle:update'
+  '/internal/vehicles/{id}/connection':
+    post:
+      tags:
+        - vehicle-admin
+      operationId: saveConnectionStatus
+      description: Save vehicle internal connection status by vehicle Id
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleConnection'
+      responses:
+        '200':
+          description: OK
+      security:
+        - vehicle_auth:
+            - 'vehicle-status:update'
+  '/internal/vehicles/{id}/connection/{status}':
+    put:
+      tags:
+        - vehicle-admin
+      operationId: updateTrackingStatus
+      description: Update vehicle internal connection status by vehicle Id
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: status
+          in: path
+          description: The status of vehicle
+          required: true
+          schema:
+            $ref: '#/components/schemas/VehicleTrackingStatus'
+      responses:
+        '200':
+          description: OK
+      security:
+        - vehicle_auth:
+            - 'vehicle-status:update'
+  '/internal/vehicles/{id}/update-count':
+    put:
+      tags:
+        - vehicle-admin
+      operationId: updateVehicleUpdateCount
+      description: Update vehicle internal update count by vehicle Id
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: updateCount
+          required: true
+          in: query
+          description: Unknow
+          schema:
+            type: integer
+            format: int64
+            default: 0
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'vehicle:update'
+  '/vehicles/component-alerts':
+    post:
+      tags:
+        - vehicle-message
+      operationId: createAlert
+      description: Create new vehicle component alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlertDtoList'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDtoList'
+      security:
+        - vehicle_auth:
+            - 'event:create'
+  '/vehicles/connection':
+
+    post:
+      tags:
+        - vehicle-message
+      operationId: saveConnectionStatusMessage
+      description: Save new vehicle connection status message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleConnection'
+
+      responses:
+        '200':
+          description: OK
+      security:
+        - vehicle_auth:
+            - 'vehicle-status:update'
+  '/vehicles/ecus/alerts':
+    post:
+      tags:
+        - vehicle-message
+      operationId: createEcuAlert
+      description: Create new vehicle ecus alerts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/EcuAlertDto'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EcuAlertDto'
+      security:
+        - webapp_auth:
+            - 'event:create'
+    get:
+      tags:
+        - vehicle-message
+      operationId: findAllAlert
+      description: Get all vehicle ecus alerts
+      parameters:
+        - name: page
+          in: query
+          description: Unknow
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuAlertDto'
+      security:
+        - webapp_auth:
+            - 'event:read'
+  '/vehicles/ecus/alerts/{id}':
+    post:
+      tags:
+        - vehicle-message
+      operationId: updateVehicleAlert
+      description: Update vehicle ecus alert by alert Id
+      parameters:
+        - name: id
+          in: path
+          description: Alert Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuAlertDto'
+      security:
+        - webapp_auth:
+            - 'event:update'
+  '/vehicles/ecus/{id}/alerts':
+    get:
+      tags:
+        - vehicle-message
+      operationId: findAlertForEcu
+      description: Get all vehicle ecus alert by ecu Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: filterType
+          in: query
+          description: Unknow
+          schema:
+            $ref: '#/components/schemas/FilterAlertType'
+        - name: page
+          in: query
+          description: Unknow
+          schema:
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          description: Unknow
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EcuAlertDto'
+      security:
+        - webapp_auth:
+            - 'event:read'
+  '/vehicles/ecus/{id}/status':
+    get:
+      tags:
+        - vehicle-message
+      operationId: calEcuAlertStatusForEcu
+      description: Unknow
+      parameters:
+        - name: id
+          in: path
+          description: Unknow
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuStatusDto'
+
+      security:
+        - webapp_auth:
+            - 'event:read'
+  '/vehicles/events':
+    post:
+      tags:
+        - vehicle-message
+      operationId: saveEventBatch
+      description: >-
+        Save a new batch of vehicle events. The batch can contain any amount of
+        the supported events. This endpoint can only be called by vehicles
+        directly and the vehicle ID is auto-detected by the login.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventBatch'
+      responses:
+        '200':
+          description: OK
+      security:
+        - vehicle_auth:
+            - 'event:create'
+  '/vehicles/events/obd2':
+    post:
+      tags:
+        - vehicle-message
+      operationId: saveObd2EventBatch
+      description: Save new obd2 event batch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OBD2Data'
+      responses:
+        '200':
+          description: OK
+      security:
+        - vehicle_auth:
+            - 'event:create'
+  '/vehicles/messages':
+    post:
+      tags:
+        - vehicle-message
+      operationId: saveMessageBatch
+      description: >-
+        Save a new batch of raw vehicle messages. In contrast to vehicle events,
+        messages are unstructured raw data collected from the vehicle network.
+        This endpoint can only be called by vehicles directly and the vehicle ID
+        is auto-detected by the login.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageBatch'
+      responses:
+        '200':
+          description: OK
+      security:
+        - vehicle_auth:
+            - 'message:create'
+  '/vehicles/{id}/ecus/alerts':
+    get:
+      tags:
+        - vehicle-message
+      operationId: findAlertForVehicle
+      description: Get all vehicle
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: filterType
+          in: query
+          description: Unknow
+          schema:
+            $ref: '#/components/schemas/FilterAlertType'
+        - name: page
+          in: query
+          description: Unknow
+          schema:
+            type: integer
+            format: int32
+        - name: size
+          in: query
+          description: Unknow
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EcuAlertDto'
+      security:
+        - webapp_auth:
+            - 'event:read'
+  '/vehicles/{id}/ecus/status':
+    get:
+      tags:
+        - vehicle-message
+      operationId: calEcuAlertStatus
+      description: Unknow
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EcuStatusDto'
+      security:
+        - webapp_auth:
+            - 'event:read'
+  '/vehicles/{id}/events':
+    get:
+      tags:
+        - vehicle-message
+      operationId: listRecentEvents
+      description: Get all most recent vehicle events.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle to get events from.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: fake
+          in: query
+          description: Fake data
+          schema:
+            type: boolean
+            default: false
+        - name: limit
+          in: query
+          description: Limit the amount of each event type returned.
+          schema:
+            type: integer
+            format: int32
+            default: 10
+            minimum: 1
+            maximum: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventBatch'
+      security:
+        - webapp_auth:
+            - 'event:read'
+  '/vehicles/{id}/events/obd2':
+    get:
+      tags:
+        - vehicle-message
+      operationId: listRecentObd2Events
+      description: Get all vehicle obd2 event by vehicle Id.
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OBD2Data'
+      security:
+        - webapp_auth:
+            - 'event:read'
+
+  '/vehicles/{id}/messages':
+    get:
+      tags:
+        - vehicle-message
+      operationId: listRecentMessages
+      description: Get all most recent raw vehicle messages.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle to get messages from.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: fake
+          in: query
+          description: Fake data
+          schema:
+            type: boolean
+            default: false
+        - name: limit
+          in: query
+          description: Limit the amount of each message type returned.
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageBatch'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/vehicles/{id}/routes':
+    get:
+      tags:
+        - vehicle-message
+      operationId: listGpsRoutes
+      description: List all tracked routes of a specific vehicle.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the vehicle to get routes from.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GpsRouteList'
+      security:
+        - webapp_auth:
+            - 'route:read'
+    post:
+      tags:
+        - vehicle-message
+      operationId: startGpsRoute
+      description: Start tracking of a new route.
+      parameters:
+        - name: id
+          in: path
+          description: 'Identifier of a vehicle, to start tracking the route for.'
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: limit
+          in: query
+          description: >-
+            A time limit in seconds, after which the newly started route
+            automatically finishes.
+          schema:
+            type: integer
+            format: int32
+            default: 3600
+            minimum: 60
+            maximum: 86400
+        - name: name
+          in: query
+          description: The name of this route.
+          schema:
+            type: string
+            default: ''
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ObjectId'
+      security:
+        - webapp_auth:
+            - 'route:create'
+
+  '/vehicles/{id}/component-alerts':
+    get:
+      tags:
+        - vehicle-message
+      operationId: findAlertByVehicleId
+      description: Get vehicle component alerts by vehicle Id
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertDtoList'
+      security:
+        - webapp_auth:
+            - 'vehicle:read'
+  '/vehicles/{id}/component-status':
+    get:
+      tags:
+        - vehicle-message
+      operationId: findComponentStatusByVehicleId
+      description: Get vehicle component status by vehicle Id
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusDtoList'
+      security:
+        - webapp_auth:
+            - 'vehicle:read'
+  '/routes/{id}':
+    get:
+      tags:
+        - vehicle-message
+      operationId: loadGpsRoutes
+      description: Get a single GPS route with all GPS events belonging to it.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the GPS route to load.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullGpsRoute'
+      security:
+        - webapp_auth:
+            - 'route:read'
+    delete:
+      tags:
+        - vehicle-message
+      operationId: deleteGpsRoute
+      description: Delete an existing GPS route.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the route to delete.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'route:delete'
+  '/routes/{id}/finish':
+    put:
+      tags:
+        - vehicle-message
+      operationId: finishGpsRoute
+      description: >-
+        Finish a running route tracking. This may fail if the specificed route
+        already exceeded the time limit.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the route to finish.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GpsRoute'
+      security:
+        - webapp_auth:
+            - 'route:update'
+  '/routes/{id}/rename':
+    put:
+      tags:
+        - vehicle-message
+      operationId: renameGpsRoute
+      description: Rename an existing route.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the route to rename.
+          required: true
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+        - name: newName
+          in: query
+          required: true
+          description: The route's new name.
+          schema:
+            type: string
+            pattern: ^(?!\s*$).+
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'route:update'
+
+  '/software':
+    get:
+      tags:
+        - vehicle-registry
+      operationId: listSoftware
+      description: Get all software
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoftwareList'
+      security:
+        - vehicle_auth:
+            - 'software:read'
+    post:
+      tags:
+        - vehicle-registry
+      operationId: createSoftware
+      description: Create new software
+      requestBody:
+        required: true
+        content:
+          appliation/json:
+            schema:
+              $ref: '#/components/schemas/Software'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Software'
+      security:
+        - vehicle_auth:
+            - 'software:create'
+  '/software/{id}':
+    get:
+      tags:
+        - vehicle-registry
+      operationId: getSoftware
+      description: Get software by software Id
+      parameters:
+        - name: id
+          in: path
+          description: Software Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Software'
+      security:
+        - vehicle_auth:
+            - 'software:read'
+    put:
+      tags:
+        - vehicle-registry
+      operationId: updateSoftware
+      description: Update software by software Id
+      parameters:
+        - name: id
+          in: path
+          description: Software Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Software'
+      security:
+        - vehicle_auth:
+            - 'software:update'
+    delete:
+      tags:
+        - vehicle-registry
+      operationId: deleteSoftware
+      description: Delete software by software Id
+      parameters:
+        - name: id
+          in: path
+          description: Software Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+        - vehicle_auth:
+            - 'software:delete'
+  '/software/{id}/version':
+    post:
+      tags:
+        - vehicle-registry
+      operationId: createNewSoftwareVersion
+      description: Create new software version by software Id
+      parameters:
+        - name: id
+          in: path
+          description: Software Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          appliation/json:
+            schema:
+              $ref: '#/components/schemas/SoftwareVersion'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SoftwareVersion'
+      security:
+        - vehicle_auth:
+            - 'software:create'
+
+  '/vehicles/ecus':
+    post:
+      tags:
+        - vehicle-registry
+      operationId: saveEcuInfo
+      description: Save information about a single new ECU in the vehicle.
+      requestBody:
+        required: true
+        content:
+          appliation/json:
+            schema:
+              $ref: '#/components/schemas/EcuInfo'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuInfo'
+      security:
+      - vehicle_auth:
+        - 'vehicle-registry:create'
+    get:
+      tags:
+      - vehicle-registry
+      operationId: listEcuInfo
+      description: List information about all registered ECUs of the vhicle.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuInfoList'
+      security:
+        - vehicle_auth:
+            - 'vehicle-registry:read'
+  '/vehicles/ecus/{id}':
+    put:
+      tags:
+        - vehicle-registry
+      operationId: updateEcuInfo
+      description: Update all information of a single existing ECU in the vehicle.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the ECU information to update.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EcuInfo'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuInfo'
+      security:
+        - vehicle_auth:
+            - 'vehicle-registry:update'
+    get:
+      tags:
+        - vehicle-registry
+      operationId: loadEcuInfo
+      description: Get information about one single ECU of the vehicle.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the ECU information to get.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuInfo'
+      security:
+        - vehicle_auth:
+            - 'vehicle-registry:read'
+    delete:
+      tags:
+        - vehicle-registry
+      operationId: deleteEcuInfo
+      description: Delete the information of a single ECU in the vehicle.
+      parameters:
+        - name: id
+          in: path
+          description: Identifier of the ECU information to delete.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+        - vehicle_auth:
+            - 'vehicle-registry:delete'
+  '/vehicles/ecus/{id}/software':
+    get:
+      tags:
+        - vehicle-registry
+      operationId: getSoftwareUpdateByEuId
+      description: Get all software by ecu Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuInfo'
+      security:
+        - vehicle_auth:
+            - 'vehicle-registry:read'
+  '/vehicles/ecus/{id}/childEcu':
+    get:
+      tags:
+        - vehicle-registry
+      operationId: loadChildEcuOfGateway
+      description: Get all child ecu by ecu Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuInfoList'
+      security:
+        - vehicle_auth:
+            - 'vehicle-registry:read'
+    post:
+      tags:
+        - vehicle-registry
+      operationId: saveChild
+      description: Create new child to gateway by Ecu Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          appliation/json:
+            schema:
+              $ref: '#/components/schemas/EcuInfo'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuInfo'
+      security:
+        - vehicle_auth:
+            - 'vehicle-registry:create'
+  '/vehicles/ecus/{id}/software/install/{softwareId}':
+    post:
+      tags:
+        - vehicle-registry
+      operationId: installSoftwareLatest
+      description: Install latest ecu software version by ecu Id and software Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: softwareId
+          in: path
+          description: Software Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuSoftwareInstallation'
+      security:
+        - vehicle_auth:
+            - 'software-install:create'
+  '/vehicles/ecus/{id}/software/install/{softwareId}/latest':
+    post:
+      tags:
+        - vehicle-registry
+      operationId: installSoftwareLatest2
+      description: Install latest ecu software version by ecu Id and software Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: softwareId
+          in: path
+          description: Software Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuSoftwareInstallation'
+      security:
+        - vehicle_auth:
+            - 'software-install:create'
+  '/vehicles/ecus/{id}/software/install/{softwareId}/{version}':
+    post:
+      tags:
+        - vehicle-registry
+      operationId: installSoftwareVersion
+      description: Install specific ecu software version by ecu Id and software Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: softwareId
+          in: path
+          description: Software Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: version
+          in: path
+          description: version
+          required: true
+          schema:
+            type: string
+        - name: force
+          in: query
+          description: Force install
+          schema:
+            type: boolean
+            default: false
+        - name: message
+          in: query
+          description: Custom status message
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuSoftwareInstallation'
+      security:
+        - vehicle_auth:
+            - 'software-install:create'
+  '/vehicles/ecus/{id}/software/status/{installationId}':
+    put:
+      tags:
+        - vehicle-registry
+      operationId: updateSoftwareInstallation
+      description: Update software installation by ecu Id and installation Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: installationId
+          in: path
+          description: Installation Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          appliation/json:
+            schema:
+              $ref: '#/components/schemas/EcuSoftwareInstallation'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuSoftwareInstallation'
+      security:
+        - vehicle_auth:
+            - 'software-install:update'
+  '/vehicles/ecus/{id}/software/uninstall/{installationId}':
+    patch:
+      tags:
+        - vehicle-registry
+      operationId: uninstallSoftware
+      description: Uninstall software installation by ecu Id and installation Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: installationId
+          in: path
+          description: Installation Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: force
+          in: query
+          description: Force uninstall
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuSoftwareInstallation'
+      security:
+        - vehicle_auth:
+            - 'software-install:delete'
+    delete:
+      tags:
+        - vehicle-registry
+      operationId: deleteSoftwareInstallation
+      description: Delete software installation by ecu Id and installation Id
+      parameters:
+        - name: id
+          in: path
+          description: Ecu Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: installationId
+          in: path
+          description: Installation Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+        - vehicle_auth:
+            - 'software-install:delete'
+  '/vehicles/{id}/ecus':
+    get:
+      tags:
+        - vehicle-registry
+      operationId: listEcuInfoOfVehicle
+      description: Get all ecus by vehicle Id
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: filterGateway
+          in: query
+          description: Only return gateways (root ECU)
+          schema:
+            type: boolean
+            format: int64
+            default: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcuInfoList'
+      security:
+        - webapp_auth:
+            - 'vehicle-registry:read'
+  '/obd2devices':
+    get:
+      tags:
+        - obd2device-admin
+      operationId: listObd2Devices
+      description: Get all obd2 devices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Obd2Device'
+      security:
+        - webapp_auth:
+            - 'obd2device-admin:read'
+    post:
+      tags:
+        - obd2device-admin
+      operationId: createObd2Device
+      description: Create new obd2 device
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Obd2DeviceUpdateInfo'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisteredObd2Device'
+      security:
+        - webapp_auth:
+            - 'obd2device-admin:create'
+  '/obd2devices/{id}':
+    get:
+      tags:
+        - obd2device-admin
+      operationId: getObd2Device
+      description: Get obd2 devices by obd2device Id
+      parameters:
+        - name: id
+          description: OBD-II device ID
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Obd2Device'
+      security:
+        - webapp_auth:
+            - 'obd2device-admin:read'
+    put:
+      tags:
+        - obd2device-admin
+      operationId: updateObd2Device
+      description: Update obd2 devices by obd2device Id
+      parameters:
+        - name: id
+          description: OBD-II device ID
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Obd2DeviceUpdateInfo'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Obd2Device'
+      security:
+        - webapp_auth:
+            - 'obd2device-admin:update'
+    delete:
+      tags:
+        - obd2device-admin
+      operationId: deleteObd2Device
+      description: Delete obd2 devices by obd2device Id
+      parameters:
+        - name: id
+          description: OBD-II device ID
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'obd2device-admin:delete'
+  '/obd2devices/{id}/vehicle/{vehicleId}':
+    put:
+      tags:
+        - obd2device-admin
+      operationId: registerAnObd2DeviceToVehicle
+      description: Register an obd2 device to vehicle by obd2device Id and vehicle Id
+      parameters:
+        - name: id
+          in: path
+          description: OBD-II device ID
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Obd2Device'
+  '/vehicles/{id}/obd2device':
+    get:
+      tags:
+        - obd2device-admin
+      operationId: getObd2DeviceOfVehicle
+      description: Get all obd2 devices that attached to a vehicle by vehicle Id
+      parameters:
+        - name: id
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Obd2Device'
+      security:
+        - webapp_auth:
+            - 'obd2device-admin:read'
+  '/obd2devices/{id}/events':
+    get:
+      tags:
+        - obd2device-event
+      operationId: getObd2Event
+      description: Get all obd2 device events by obd2device Id
+      parameters:
+        - name: id
+          description: OBD-II device ID
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: minTimestamp
+          description: Min timestamp to retrieve event data
+          in: query
+          schema:
+            type: integer
+            format: int64
+            default: null
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OBD2Data'
+      security:
+        - webapp_auth:
+            - 'obd2device-event:read'
+  '/obd2devices/events':
+    post:
+      tags:
+        - obd2device-event
+      operationId: sentObd2EventsByJson
+      description: 'Use this api to sent Obd2 event, the data will be sent as Json'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OBD2Data'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'event:create'
+  '/obd2devices/events/proto':
+    post:
+      tags:
+        - obd2device-event
+      operationId: sentObd2EventsByProtobuf
+      description: 'Use this api to sent Obd2 event, the data will be sent as Protobuf'
+      requestBody:
+        required: true
+        content:
+          application/x-protobuf:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/OBD2Data'
+      responses:
+        '200':
+          description: OK
+      security:
+        - webapp_auth:
+            - 'event:create'
+  '/{vehicleId}/speed':
+    get:
+      tags:
+        - socket-api
+      operationId: updateSpeed
+      description: Update vehicle speed by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/fuel':
+    get:
+      tags:
+        - socket-api
+      operationId: updateFuel
+      description: Update vehicle fuel by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/available-driving-distance':
+    get:
+      tags:
+        - socket-api
+      operationId: updateAvailableDrivingDistance
+      description: Update vehicle available driving distance by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/temperature':
+    get:
+      tags:
+        - socket-api
+      operationId: updateTemperature
+      description: Update vehicle temperature by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/rpm':
+    get:
+      tags:
+        - socket-api
+      operationId: updateRpm
+      description: Update vehicle Rpm by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Value'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/mileage':
+    get:
+      tags:
+        - socket-api
+      operationId: updateMileage
+      description: Update vehicle mileage by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/odometer':
+    get:
+      tags:
+        - socket-api
+      operationId: updateOdometer
+      description: Update vehicle odometer by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/gear':
+    get:
+      tags:
+        - socket-api
+      operationId: updateGear
+      description: Update vehicle gear by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gear'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/braking':
+    get:
+      tags:
+        - socket-api
+      operationId: updateBraking
+      description: Update vehicle braking by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/mpg':
+    get:
+      tags:
+        - socket-api
+      operationId: updateMpg
+      description: Update vehicle mpg by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Value'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/gps':
+    get:
+      tags:
+        - socket-api
+      operationId: updateGps
+      description: Update vehicle gps by vehicle Id
+      parameters:
+        - name: vehicleId
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/{vehicleId}/alerts/{ecutype}':
+    get:
+      tags:
+        - socket-api
+      operationId: updateAlert
+      description: Update vehicle alert by vehicle Id and ecu type
+      parameters:
+        - name: vehicleId
+
+          in: path
+          description: Vehicle Id
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+        - name: ecutype
+          in: path
+          description: Ecu type
+          required: true
+          schema:
+            type: string
+            enum:
+              - engine
+              - tire
+              - oil
+              - brake
+              - coolant
+              - battery
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Alert'
+      security:
+        - webapp_auth:
+            - 'message:read'
+  '/anomalies':
+    get:
+      tags:
+        - fleet-dashboard
+      operationId: getListAnomalies
+      description: Get list anomalies on server
+      parameters:
+        - name: begin
+          in: query
+          description: A start timestamp from which anomalies will be exported.
+          schema:
+            type: integer
+            format: int64
+            default: 0
+        - name: end
+          in: query
+          description: The end timestamp to limit anomalies entries to.
+          schema:
+            type: integer
+            format: int64
+            default: 9223372036854776000
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnomalyList'
+      security:
+        - webapp_auth:
+            - 'anomaly:read'
+  '/risk':
+    get:
+      tags:
+        - fleet-dashboard
+      operationId: getRiskLevel
+      description: Get current risk level
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Risk'
+      security:
+        - webapp_auth:
+            - 'risk:read'
+
+components:
+  securitySchemes:
+    webapp_auth:
+      type: oauth2
+      flows:
+        password:
+          tokenUrl: 'https://secureskye-demo.trilliumsecure.com/uaa/oauth/token'
+          scopes:
+            'anomaly:read': ''
+            'event:read': ''
+            'route:create': ''
+            'route:read': ''
+            'route:update': ''
+            'route:delete': ''
+            'vehicle:create': ''
+            'vehicle:read': ''
+            'vehicle:update': ''
+            'vehicle:delete': ''
+            'vehicle-model:create': ''
+            'vehicle-model:read': ''
+            'vehicle-model:update': ''
+            'vehicle-model:delete': ''
+            'vehicle-registry:read': ''
+            'vehicle-status:update': ''
+            'user:create': ''
+            'user:read': ''
+            'user:update': ''
+            'user:delete': ''
+            'user-settings:read': ''
+            'user-settings:update': ''
+            'authority:read': ''
+            'ie:create': ''
+            'ie:read': ''
+            'message:read': ''
+            'ota-images:create': ''
+            'ota-images:read': ''
+            'ota-images:update': ''
+            'ota-images:delete': ''
+            'notification:create': ''
+            'notification:read': ''
+            'notification:delete': ''
+            'software-install:create': ''
+            'software-install:read': ''
+            'software-install:update': ''
+            'subscription:create': ''
+            'subscription:read': ''
+            'subscription:update': ''
+            'subscription:delete': ''
+            'risk:read': ''
+            'role:read': ''
+            'role:create': ''
+            'role:update': ''
+            'role:delete': ''
+            'obd2device-admin:read': ''
+            'obd2device-admin:create': ''
+            'obd2device-admin:update': ''
+            'obd2device-admin:delete': ''
+    vehicle_auth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: 'https://secureskye-demo.trilliumsecure.com/uaa/oauth/token'
+          scopes:
+
+            'alert:create': ''
+            'event:create': ''
+            'message:create': ''
+            'ota-images:read': ''
+            'software:read': ''
+            'software:create': ''
+            'software-install:create': ''
+            'software-install:read': ''
+            'software-install:update': ''
+            'software-install:delete': ''
+            'vehicle-registry:create': ''
+            'vehicle-registry:read': ''
+            'vehicle-registry:update': ''
+            'vehicle-registry:delete': ''
+            'vehicle-status:update': ''
+            'obd2device-admin:read': ''
+            'obd2device-admin:update': ''
+  schemas:
+    ObjectId:
+      type: string
+      pattern: '^[a-z0-9]{24}$'
+      description: Besides the UUID another unique identifier used for some objects.
+    UUID:
+      type: string
+      pattern: '^[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}$'
+      description: A universally unique identifier used as ID for most of the objects.
+    SemVer:
+      type: string
+      pattern: '^\d+\.\d+\.\d+(?:-[0-9A-Za-z-.]+)?(?:\+[0-9A-Za-z-.]+)?$'
+      description: >-
+        A version number following semantic versioning. See https://semver.org
+        for details.
+    Subscription:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/UUID'
+            name:
+              type: string
+              description: The username.
+            displayName:
+              type: string
+              description: >-
+                The user chosen display name, usually a combination of first,
+                middle and last name.
+            firstName:
+              type: string
+              description: The user's first name.
+            lastName:
+              type: string
+              description: The user's last (family) name.
+            middleName:
+              type: string
+              description: The user's optional middle name.
+            email:
+              type: string
+              description: Mail eMail address of the user.
+          description: The user that is subscribed.
+        topic:
+          $ref: '#/components/schemas/Topic'
+        channel:
+          $ref: '#/components/schemas/Channel'
+      description: A subscription for notifications to one or more topics.
+    SubscriptionList:
+      type: object
+      properties:
+        subscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subscription'
+          description: The actual data list.
+      description: A list of notification subscriptions.
+    Topic:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+          description: Name of this topic.
+        description:
+          type: string
+          description: Short description about this topic.
+        subjectPrefix:
+          type: string
+          description: >-
+            An optional prefix that is added to the subject, usually enclosed in
+            brackets.
+      description: A notification topic that users can subscribe to.
+    TopicList:
+      type: object
+      properties:
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'
+          description: The actual data list.
+      description: A list of notification topics.
+    ChannelType:
+      type: integer
+      format: int32
+      enum:
+        - 0
+        - 1
+      description: |
+        The channel where to receive notifications.
+        * 0 - Default
+        * 1 - Email
+    ChannelTypeString:
+      type: string
+      enum:
+        - Default
+        - Email
+      description: The channel where to receive notifications.
+    Channel:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        type:
+          $ref: '#/components/schemas/ChannelType'
+        name:
+          type: string
+          description: Name of this channel.
+        description:
+          type: string
+          description: Short description about this channel.
+      description: A channel (e.g. Email) where the user can receive notifications.
+    ChannelList:
+      type: object
+      properties:
+        channels:
+          items:
+            $ref: '#/components/schemas/Channel'
+          description: The actual data list.
+      description: A list of notification channels.
+    Notification:
+      type: object
+      properties:
+        recipient:
+          $ref: '#/components/schemas/UUID'
+        subject:
+          type: string
+          description: >-
+            Subject line of the notification. In case the channel doesn't have
+            any kind of subjecct line, it will be added at the beginning of the
+            message.
+        message:
+          type: string
+          description: The message to be sent.
+        channel:
+          $ref: '#/components/schemas/ChannelType'
+      description: A notification that is yet to be send to one or more users.
+    Image:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of this image to request it from the service.
+        name:
+          type: string
+          description: Name of this iamge.
+        checksum:
+          type: string
+          description: An SHA-256 hash of the image's content to verify integrity.
+        softwareId:
+          $ref: '#/components/schemas/UUID'
+        versionName:
+          type: string
+          description: The software version name.
+        versionCode:
+          type: string
+          description: The software version number used to compare.
+        changelog:
+          type: string
+          description: The change log information.
+        url:
+          type: string
+          description: Direct download URL for this image.
+      description: An OTA binary image that can be flashed to an ECU.
+    Ecu:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier of this update in the service.
+        description:
+          type: string
+          description: Short description of this update.
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+          description: A list of binary images to be flashed to this ECU.
+      description: >-
+        A full update for a single ECU. This can constist of one or more binary
+        images.
+    Metadata:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of this package.
+        name:
+          type: string
+          description: Unique name of this package.
+        category:
+          type: string
+          description: The kind of update (for example production, experimental, ...).
+        family:
+          type: string
+          description: The vehicle family (model) that is the target.
+        status:
+          $ref: '#/components/schemas/PackageStatus'
+        date:
+          type: string
+        ecus:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ecu'
+          description: A list of ECUs that should be update with this package.
+        deleted:
+          type: boolean
+      description: >-
+        Metadata about and representing a complete update package. This is a
+        transformed version of the archive that the user uploads for
+        distribution.
+    MetadataList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metadata'
+          description: The actual data list.
+      description: >-
+        A list of update packages to be distributed (or already distributed) to
+        vehicles.
+    PackageStatus:
+      type: string
+      enum:
+        - New
+        - Released
+        - Reviewing
+        - Passed
+        - NotGood
+    OtaStatistics:
+      type: object
+      properties:
+        imageArchiveCount:
+          type: integer
+          format: int64
+          description: The current total amount of saved packages.
+      description: Several statistics about OTA packages.
+    OAuthTOTP:
+      type: object
+      properties:
+        oauthId:
+          type: string
+          description: Unique OAuth identifier.
+        oauthGroup:
+          type: string
+          description: 'A group name, to enable batch operations on 2FA tasks.'
+        secret:
+          type: string
+          description: >-
+            The secret to create one time passwords. This is only present in the
+            initial registration for two factor authentication and never
+            transferred later.
+        recoveryCode1:
+          type: integer
+          format: int32
+          description: >-
+            One of up to 5 recovery codes, as backup in case the on time
+            passwords are not accessible.
+        recoveryCode2:
+          type: integer
+          format: int32
+          description: >-
+            One of up to 5 recovery codes, as backup in case the on time
+            passwords are not accessible.
+        recoveryCode3:
+          type: integer
+          format: int32
+          description: >-
+            One of up to 5 recovery codes, as backup in case the on time
+            passwords are not accessible.
+        recoveryCode4:
+          type: integer
+          format: int32
+          description: >-
+            One of up to 5 recovery codes, as backup in case the on time
+            passwords are not accessible.
+        recoveryCode5:
+          type: integer
+          format: int32
+          description: >-
+            One of up to 5 recovery codes, as backup in case the on time
+            passwords are not accessible.
+        enabled:
+          type: boolean
+          description: Werether the two factor authentication is enabled or not.
+        otpAuthUri:
+          type: string
+          description: >-
+            An URI that contains all required 2FA information to set up a
+            client.
+      description: OAuth two factor authentication information.
+    OAuthTOTPList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OAuthTOTP'
+          description: The actual data list.
+      description: A list of two factor authentication details.
+    TwoFactorAuthenticationStatus:
+      type: integer
+      format: int32
+      enum:
+      - 0
+      - 1
+      - 2
+      description: |
+        The current status of two factor authentication.
+        * 0 - Disabled
+        * 1 - Enabled
+        * 2 - Pending
+    Credential:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        version:
+          type: integer
+          format: int32
+        name:
+          type: string
+          description: The username used for login.
+        password:
+          type: string
+          description: Password of the user. This is usually empty.
+        enabled:
+          type: boolean
+          description: Werether the user account is disabled.
+        avatar:
+          type: string
+          description: >-
+            The user's profile picture. On requests this is the Base64 encoded
+            data of the image. On responses this is an URL to download the
+            image.
+        avatarFormat:
+          type: string
+          description: Format (e.g. PNG) of the image.
+        avatarThirdParty:
+          type: boolean
+          description: >-
+            Werether this avatar is from a 3rd party service or provided
+            directly by the service.
+        firstName:
+          type: string
+          description: First name of the user.
+        lastName:
+          type: string
+          description: Last (family) name of the user.
+        email:
+          type: string
+          description: Main contact and account eMail address.
+        phoneAreaCode:
+          type: string
+        phoneNumber:
+          type: integer
+        gender:
+          type: boolean
+        birthday:
+          type: integer
+          format: int64
+        nationality:
+          type: string
+        address:
+          type: string
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+          description: A list of all roles assigned to the user.
+        tfa:
+          $ref: '#/components/schemas/TwoFactorAuthenticationStatus'
+        additionalInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdditionalInfo'
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+      description: User login credentials and basic information.
+    CredentialList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Credential'
+          description: The actual data list.
+      description: A list of users.
+    Role:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+          description: Unique name of this role.
+        description:
+          type: string
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/Credential'
+          description: List of all users that this role owns.
+        authorities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Authority'
+          description: List of all authorities that this role owns.
+      description: >-
+        A role that bundles several authorities into one entity. This is similar
+        to groups.
+    RoleSet:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+          description: The actual data list.
+      description: 'A set of roles. A set means, every entry will be unique by name.'
+    Authority:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        authority:
+          type: string
+          description: Name of this authority.
+        description:
+          type: string
+          description: >-
+            Short description about the access rights available through this
+            authority.
+      description: An authority which describes the smallest unit of access right.
+    AuthorityList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Authority'
+          description: The actual data list.
+      description: A list of authorities that can be assigned to roles
+    AdditionalInfo:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        key:
+          type: string
+        value:
+          type: string
+    Attachment:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        fileId:
+          type: string
+        fileName:
+          type: string
+        url_image:
+          type: string
+    UserStatistics:
+      type: object
+      properties:
+        memberCount:
+          type: integer
+          format: int64
+          description: Total amount of users in the system.
+      description: Several statistics about users.
+    UnitSettings:
+      type: object
+      properties:
+        length:
+          type: integer
+          format: int32
+          enum:
+            - 0
+            - 1
+          description: |
+            The length unit used for displaying in the UI.
+            * 0 - Kilometers
+            * 1 - Miles
+        mass:
+          type: integer
+          format: int32
+          enum:
+            - 0
+            - 1
+          description: |
+            The mass unit used for displaying in the UI.
+            * 0 - Kilograms
+            * 1 - Pounds
+        temperature:
+          type: integer
+          format: int32
+          enum:
+            - 0
+            - 1
+            - 2
+          description: |
+            The temperature unit used for displaying in the UI.
+            * 0 - Celsius
+            * 1 - Fahrenheit
+            * 2 - Kelvin
+    NewVehicle:
+      type: object
+      properties:
+        modelId:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+          description: Name of the new vehicle.
+      description: Request for a new vehicle to be created.
+    VehicleMaker:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+          description: Name of this maker.
+      description: A specific vehicle maker.
+    VehicleMakerList:
+      type: object
+      properties:
+        makers:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleMaker'
+          description: The actual data list.
+      description: A list of vehicle makers.
+    VehicleModel:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+          description: Name of this model.
+        maker:
+          $ref: '#/components/schemas/VehicleMaker'
+        body:
+          $ref: '#/components/schemas/VehicleBodyType'
+        displaySettings:
+          $ref: '#/components/schemas/ModelDisplaySettings'
+        vehicle2FaStatus:
+          $ref: '#/components/schemas/TwoFactorAuthenticationStatus'
+        vehicle2Fa:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleOAuthTOTP'
+          description: >-
+            List of vehicle 2FA information for all vehicles that are of this
+            model.
+      description: A specific vehicle model.
+    VehicleModelList:
+      type: object
+      properties:
+        model:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleModel'
+          description: The actual data list.
+      description: A list of vehicle models.
+    VehicleBodyType:
+      type: string
+      enum:
+        - CUSTOM
+        - HATCHBACK
+        - SEDAN
+        - MUV
+        - SUV
+        - COUPE
+        - CONVERTIBLE
+        - WAGON
+        - VAN
+        - JEEP
+    ModelDisplaySettings:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        settings:
+          $ref: '#/components/schemas/ModelDisplaySettingsType'
+        value:
+          type: boolean
+        model_id:
+          $ref: '#/components/schemas/UUID'
+    ModelDisplaySettingsType:
+      type: string
+      enum:
+      - UNDEFINED
+      - OTHER
+      - SPEED
+      - FUEL
+      - TEMPERATURE
+      - RPM
+      - TRIP_ODOMETER
+      - ODOMETER
+      - GEAR
+      - ROUTE
+      - ALERT_NODE
+      - SPEED_GRAPH
+      - RPM_GRAPH
+      - BRAKING_GRAPH
+      - MPG_GRAPH
+      - MIL_ENGINE
+      - MIL_TIRE_PRESSURE
+      - MIL_ENGINE_OIL
+      - MIL_BRAKES
+      - MIL_ENGINE_COOLANT
+      - MIL_BATTERY
+      description: on/off display settings for vehicle model
+    Vehicle:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        modelId:
+          $ref: '#/components/schemas/UUID'
+        modelName:
+          type: string
+          description: Name of the vehicle model it belongs to.
+        name:
+          type: string
+          description: Name of this vehicle.
+        tfa:
+          $ref: '#/components/schemas/TwoFactorAuthenticationStatus'
+        makerId:
+          $ref: '#/components/schemas/UUID'
+        makerName:
+          type: string
+          description: Name of the vehicle maker it belongs to.
+        bodyType:
+          $ref: '#/components/schemas/VehicleBodyType'
+        vin:
+          type: string
+        color:
+          type: string
+        imageUrl:
+          type: string
+        updateCount:
+          type: integer
+        connection:
+          $ref: '#/components/schemas/VehicleConnection'
+        alertCount:
+          $ref: '#/components/schemas/VehicleAlertCount'
+        deleted:
+          type: boolean
+      description: Representation of a single vehicle.
+    VehicleList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vehicle'
+          description: The actual data list.
+      description: A list of vehicles.
+    VehicleAlertCount:
+      type: object
+      properties:
+        danger:
+          type: number
+          format: int32
+        warning:
+          type: number
+          format: int32
+        info:
+          type: number
+          format: int32
+      description: total count of each alert type of a vehicle
+    VehicleConnection:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        connected:
+          type: boolean
+        connectedTimestamp:
+          type: number
+          format: int64
+        disconnectedTimestamp:
+          type: number
+          format: int64
+        lastReceivingTimestamp:
+          type: number
+          format: int64
+        ipAddress:
+          type: string
+        status:
+          $ref: '#/components/schemas/VehicleTrackingStatus'
+      description: Connection status and information of a vehicle
+    VehicleTrackingStatus:
+      type: string
+      enum:
+      - UNKNOWN
+      - STOPPED
+      - MOVING
+      description: Vehicle moving status
+    RegisteredVehicle:
+      type: object
+      properties:
+        vehicle:
+          $ref: '#/components/schemas/Vehicle'
+        clientId:
+          type: string
+          description: >-
+            The client ID to be used for authenticating requests against the
+            service.
+      description: A newly registered vehicle.
+    VehicleStatistics:
+      type: object
+      properties:
+        vehicleCount:
+          type: integer
+          format: int64
+          description: Total amount of registered vehicles.
+        modelCount:
+          type: integer
+          format: int64
+          description: Total amount of vehicle models.
+      description: Several statistics about vehicles.
+    VehicleOAuthTOTP:
+      type: object
+      properties:
+        vehicleId:
+          $ref: '#/components/schemas/UUID'
+        vehicleName:
+          type: string
+          description: Name of the vehicle.
+        oauthTotp:
+          $ref: '#/components/schemas/OAuthTOTP'
+        status:
+          $ref: '#/components/schemas/TwoFactorAuthenticationStatus'
+      description: Vehicle specific two factor authentication information.
+    GpsEvent:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+          description: Nanosecond precision timestamp of the event occurrence.
+        latitude:
+          type: number
+          format: double
+          description: Latitude coordinate of the GPS location.
+        longitude:
+          type: number
+          format: double
+          description: Longitude coordinate of the GPS location.
+      description: A vehicle GPS event reporting it's location.
+    OnBoardTest:
+      type: object
+      properties:
+        available:
+          type: boolean
+          description: Werether the on board test is available.
+        incomplete:
+          type: boolean
+          description: Werether the test is complete or not.
+    EventBatch:
+      type: object
+      properties:
+        gps:
+          type: array
+          items:
+            $ref: '#/components/schemas/GpsEvent'
+        odometer:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: integer
+                format: int64
+                description: Nanosecond precision timestamp of the event occurrence.
+              value:
+                type: integer
+                format: uint64
+                description: Odometer (total distance) travelled by the vehicle.
+        batteryEnergy:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: integer
+                format: int64
+                description: Nanosecond precision timestamp of the event occurrence.
+        fuelConsumption:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: integer
+                format: int64
+                description: Nanosecond precision timestamp of the event occurrence.
+        gearShift:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: integer
+                format: int64
+                description: Nanosecond precision timestamp of the event occurrence.
+              gear:
+                type: integer
+                format: uint32
+                description: The gear the gear stick is in at the reported time.
+        wheelSpeed:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: integer
+                format: int64
+                description: Nanosecond precision timestamp of the event occurrence.
+              frontLeft:
+                type: integer
+                format: int32
+                description: Speed of the front left wheel.
+              frontRight:
+                type: integer
+                format: int32
+                description: Speed of the front right wheel.
+              rearLeft:
+                type: integer
+                format: int32
+                description: Speed of the rear left wheel.
+              rearRight:
+                type: integer
+                format: int32
+                description: Speed of the rear right wheel.
+        obd2:
+          type: object
+          properties:
+            milStatus:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  mil:
+                    type: boolean
+                    description: Werether the MIL warning lamp is lit or not.
+                  dtcCount:
+                    type: integer
+                    format: uint32
+                    description: Count of diagnostic trouble codes.
+                  engineType:
+                    type: integer
+                    format: int32
+                    enum:
+                      - 0
+                      - 1
+                    description: |
+                      The type of engine used in the vehicle.
+                      * 0 - Spark
+                      * 1 - Compression
+                  componentsTest:
+                    $ref: '#/components/schemas/OnBoardTest'
+                  fuelSystemTest:
+                    $ref: '#/components/schemas/OnBoardTest'
+                  misfireTest:
+                    $ref: '#/components/schemas/OnBoardTest'
+                  engineTests:
+                    oneOf:
+                      - type: object
+                        properties:
+                          egrSystem:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          oxygenSensorHeater:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          oxygenSensor:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          acRefrigerant:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          secondaryAirSystem:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          evaporativeSystem:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          heatedCatalyst:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          catalyst:
+                            $ref: '#/components/schemas/OnBoardTest'
+                      - type: object
+                        properties:
+                          egrVvtSystem:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          pmFilterMonitoring:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          exhaustGasSensor:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          boostPressure:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          noxScrMonitor:
+                            $ref: '#/components/schemas/OnBoardTest'
+                          nmhcCatalyst:
+                            $ref: '#/components/schemas/OnBoardTest'
+            engineLoad:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  value:
+                    type: integer
+                    format: uint32
+                    description: The engine load at event occurrence.
+            engineCoolant:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  temperature:
+                    type: integer
+                    format: int32
+                    description: The engine coolant's temperature.
+            rpm:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  value:
+                    type: integer
+                    format: uint32
+                    description: Rounds per minute.
+            speed:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  kmh:
+                    type: number
+                    format: uint32
+                    description: Speed in kilometers per hour
+            intakeAir:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  temperature:
+                    type: integer
+                    format: int32
+                    description: Temperature of the intake air.
+            massAirFlow:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  rate:
+                    type: number
+                    format: double
+                    description: Rate of the mass air flow.
+            throttle:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  value:
+                    type: integer
+                    format: uint32
+                    description: The vehicle's throttle.
+            engineRuntime:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  seconds:
+                    type: integer
+                    format: uint32
+                    description: Total vehicle runtime in seconds.
+            fuelLevel:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  value:
+                    type: integer
+                    format: uint32
+                    description: Fuel level of the vehicle.
+            codeClearDistance:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  value:
+                    type: integer
+                    format: uint32
+                    description: >-
+                      Travelled distance since the last code clearing in
+                      kilometers.
+            controlModuleVoltage:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  voltage:
+                    type: integer
+                    format: uint32
+                    description: Voltage of the control module in Volts.
+            ambientTemperature:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  temperature:
+                    type: integer
+                    format: int32
+                    description: The reported ambient temperature.
+            troubleCodes:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  code:
+                    type: string
+                    description: >-
+                      A trouble code indicating specific problems in the
+                      vehicle.
+            vin:
+              type: array
+              items:
+                type: object
+                properties:
+                  timestamp:
+                    type: integer
+                    format: int64
+                    description: Nanosecond precision timestamp of the event occurrence.
+                  value:
+                    type: string
+                    description: The Vehicle Identification Number.
+          description: A batch of OBD-II standardized vehicle events.
+      description: Batch of several vehicle events.
+    AlertBatch:
+      type: array
+      items:
+        $ref: '#/components/schemas/Alert'
+    MessageBatch:
+      type: object
+      properties:
+        timeRange:
+          type: object
+          properties:
+            since:
+              type: integer
+              format: int64
+              description: Time of the oldest entry in the batch.
+            until:
+              type: integer
+              format: int64
+              description: Time of the newest entry in the batch.
+          description: Time range of the entries contained in this batch.
+        canBus:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: integer
+                format: int64
+                description: Nanosecond precision timestamp of the event occurrence.
+              messageId:
+                type: integer
+                format: int32
+                description: Identifier of the CAN message.
+              data:
+                type: string
+                format: byte
+                description: Binary data of the CAN message.
+              dlc:
+                type: integer
+                format: int32
+                description: >-
+                  Data length count. This can vary from the actual length of
+                  data.
+          description: CAN bus messages.
+      description: Batch raw messages from different kinds of systems in the vehicle.
+    GpsRoute:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        vehicleId:
+          $ref: '#/components/schemas/UUID'
+        timestamp:
+          type: integer
+          format: int64
+          description: Creation timestamp of the route.
+        start:
+          type: integer
+          format: int64
+          description: Start date and time.
+        stop:
+          type: integer
+          format: int64
+          description: End date and time.
+        name:
+          type: string
+          description: Name of the GPS route.
+        finished:
+          type: boolean
+          description: Werether the route is finished or not.
+      description: GPS route of a vehicle.
+    GpsRouteList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/GpsRoute'
+          description: The actual data list.
+      description: A list of GPS routes.
+    FullGpsRoute:
+      type: object
+      properties:
+        route:
+          $ref: '#/components/schemas/GpsRoute'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/GpsEvent'
+          description: All GPS events that occurred in the routes time range.
+      description: A GPS route together with all GPS events belonging to it.
+    CodeInfo:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        code:
+          type: integer
+          format: int64
+          description: Number of this error code.
+        detail:
+          type: string
+          description: Detailed information about the meaning of this error code.
+    ErrorCodeInfo:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        ipsVersion:
+          type: string
+          description: Currently installed IPS version.
+        ruleDbStatus:
+          type: integer
+          format: int32
+          description: Status of the IPS rule database.
+        errorCount:
+          type: integer
+          format: uint32
+          description: Total number of errors that occurred.
+        errorCodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CodeInfo'
+          description: A list of individual errors that occurred.
+      description: Intrusion prevention system error information.
+    Software:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+        description:
+          type: string
+        latest:
+          $ref: '#/components/schemas/SoftwareVersion'
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SoftwareVersion'
+      description: Information of a ecu's software
+    SoftwareList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Software'
+    SoftwareVersion:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        versionCode:
+          type: number
+          format: int64
+        versionName:
+          type: string
+        availableSince:
+          type: number
+          format: int64
+        changelog:
+          type: string
+        imageId:
+          type: string
+        metadataId:
+          type: string
+      description: Version of a software
+    EcuInfo:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        type:
+          $ref: '#/components/schemas/EcuTypeInfo'
+        displayId:
+          type: string
+        interfaceInfo:
+          type: object
+          properties:
+            ecuDeviceId:
+              type: string
+              description: Unique vehicle internal identifier of this ECU.
+            commProtocol:
+              type: integer
+              format: int32
+              enum:
+                - 0
+                - 1
+                - 2
+                - 3
+                - 4
+                - 5
+                - 6
+              description: |
+                Communication protocol through which the ECU communicates with
+                the gateway.
+                * 0 - Unspecified
+                * 1 - Can
+                * 2 - Lin
+                * 3 - Ethernet
+                * 4 - Http
+                * 5 - Https
+                * 6 - Ssl
+            messageId:
+              type: string
+              description: Message identifier for this ECU.
+        gatewayInterfaceInfo:
+          $ref: '#/components/schemas/GatewayInfo'
+        errorCode:
+          $ref: '#/components/schemas/ErrorCodeInfo'
+        parent:
+          $ref: '#/components/schemas/EcuInfo'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcuInfo'
+        softwareInstallation:
+          $ref: '#/components/schemas/EcuSoftwareInstallation'
+        topPosition:
+          type: string
+        leftPosition:
+          type: string
+        securityStatus:
+          $ref: '#/components/schemas/EcuStatus'
+
+      description: Information about the ECU of a vehicle.
+    EcuInfoList:
+      type: object
+      properties:
+        ecuInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcuInfo'
+          description: The actual data list.
+      description: A list of ECU information.
+    EcuTypeInfo:
+      type: string
+      enum:
+        - 0
+        - 1
+        - 2
+      description: |
+        Ecu Type.
+        * 0 - UNDEFINED
+        * 1 - GATEWAY
+        * 2 - GENERIC
+    GatewayInfo:
+      type: object
+      properties:
+        ip:
+          type: string
+          description: IPv4 address of the gateway.
+        vin:
+          type: string
+          description: Vehicle identification number.
+        errorCode:
+          $ref: '#/components/schemas/ErrorCodeInfo'
+        ecus:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcuInfo'
+          description: List of ECUs managed by this gateway.
+      description: Information about the gateway of a vehicle.
+    EcuSoftwareInstallation:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        software:
+          $ref: '#/components/schemas/Software'
+        current:
+          $ref: '#/components/schemas/SoftwareVersion'
+        status:
+          type: integer
+          format: int32
+          enum:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+          description: |
+            * 0 - UNKNOWN
+            * 1 - INSTALLING
+            * 2 - UNINSTALLING
+            * 3 - SUCCESS
+            * 4 - ERROR
+        lastModified:
+          type: number
+          format: int64
+      description: Information of a software installation
+    AlertType:
+      type: integer
+      format: int32
+      enum:
+        - 0
+        - 1
+        - 2
+      description: |
+        Types of alert.
+          * 0 - Wanring
+          * 1 - Critical
+          * 2 - Infomation
+    EcuType:
+      type: integer
+      format: int32
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+      description: |
+        Type of Ecus.
+          * 0 - Engine
+          * 1 - Tire Pressure
+          * 2 - Engine Oil
+          * 3 - Brakes
+          * 4 - Engine Coolant
+          * 5 - Battery
+    Alert:
+      type: object
+      properties:
+        vehicleID:
+          $ref: '#/components/schemas/UUID'
+        ecuId:
+          $ref: '#/components/schemas/UUID'
+        ecuType:
+          $ref: '#/components/schemas/EcuType'
+        type:
+          $ref: '#/components/schemas/AlertType'
+        timestamp:
+          type: integer
+          format: int64
+        description:
+          type: string
+        location:
+          $ref: '#/components/schemas/Location'
+    Location:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        longitude:
+          type: number
+          format: double
+        latitude:
+          type: number
+          format: double
+    Value:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        value:
+          type: number
+        unit:
+          type: string
+    Gear:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+        value:
+          type: string
+    EcuAlertDto:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        ecuId:
+          $ref: '#/components/schemas/UUID'
+        vehicleId:
+          $ref: '#/components/schemas/UUID'
+        ecuAlertLocation:
+          $ref: '#/components/schemas/EcuAlertLocation'
+        alertTitle:
+          type: string
+        detailAlert:
+          type: string
+        alertType:
+          $ref: '#/components/schemas/EcuAlertType'
+        alertStatus:
+          $ref: '#/components/schemas/EcuAlertStatus'
+        timestamp:
+          type: number
+          format: int64
+      description: Information of an ecu alert
+    EcuAlertLocation:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+    EcuAlertType:
+      type: string
+      enum:
+        - INFORMATION
+        - WARNING
+        - CRITICAL
+    EcuAlertStatus:
+      type: string
+      enum:
+        - NEW
+        - FIXED
+    FilterAlertType:
+      type: string
+      enum:
+        - DEFAULT
+        - CRITICAL
+        - WARNING
+        - INFORMATION
+    EcuStatusDto:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        ecuId:
+          type: string
+        status:
+          $ref: '#/components/schemas/EcuStatus'
+        ruleDbStatus:
+          type: integer
+          format: int32
+        errorCount:
+          type: integer
+          format: int64
+      description: Status information of ecu alert
+    EcuStatus:
+      type: string
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+      description:  |
+        Ecu status.
+        * 0 - Unclear
+        * 1 - Normal
+        * 2 - Information
+        * 3 - Warning
+        * 4 - Critical
+    AlertDtoList:
+      type: array
+      items:
+        $ref: '#/components/schemas/VehicleComponentAlertDto'
+    StatusDtoList:
+      type: array
+      items:
+        $ref: '#/components/schemas/VehicleComponentStatusDto'
+    VehicleComponentAlertDto:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        vehicleId:
+          $ref: '#/components/schemas/UUID'
+        componentType:
+          type: string
+        alertType:
+          type: string
+        alertStatus:
+          type: string
+        timestamp:
+          type: number
+          format: int64
+        detailInfo:
+          type: string
+    VehicleComponentStatusDto:
+      type: object
+      properties:
+        componentName:
+          type: string
+        status:
+          type: string
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleComponentAlertDto'
+    VehicleSecurity:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        vehicleId:
+          $ref: '#/components/schemas/UUID'
+        isActive:
+          type: boolean
+        securitySoftware:
+          $ref: '#/components/schemas/SecuritySoftware'
+        securitySettingConfigs:
+          $ref: '#/components/schemas/SecuritySettingConfig'
+    VehicleSecurityList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/VehicleSecurity'
+    SecuritySetting:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+        description:
+          type: string
+        securitySoftware:
+          $ref: '#/components/schemas/SecuritySoftware'
+    SecuritySoftware:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        name:
+          type: string
+        description:
+          type: string
+    SecuritySettingConfig:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        isActive:
+          type: boolean
+        securitySetting:
+          $ref: '#/components/schemas/SecuritySetting'
+    Obd2Device:
+      type: object
+      properties:
+        id:
+          type: string
+        family:
+          type: string
+        kernel:
+          type: string
+        macAddress:
+          type: string
+        vehicleId:
+          $ref: '#/components/schemas/UUID'
+      description: Information of an Obd2 device
+    Obd2DeviceUpdateInfo:
+      type: object
+      properties:
+        family:
+          type: string
+        kernel:
+          type: string
+        macAddress:
+          type: string
+    RegisteredObd2Device:
+      type: object
+      properties:
+        device:
+          $ref: '#/components/schemas/Obd2Device'
+        clientId:
+          type: string
+      description: Obd2 client information
+    OBD2Data:
+      type: object
+      properties:
+        timestamp:
+          type: number
+          format: int64
+        speed:
+          type: number
+          format: double
+        fuel:
+          type: number
+          format: double
+        availableDrivingDistance:
+          type: number
+          format: double
+        engineCoolant:
+          type: number
+          format: double
+        rpm:
+          type: number
+          format: int32
+        odometer:
+          type: number
+          format: double
+        tripOdometer:
+          type: number
+          format: double
+        gearShift:
+          type: string
+          enum:
+            - Unknown
+            - One
+            - Two
+            - Neutral
+            - Drive
+            - Reverse
+            - Park
+        gps:
+          $ref: '#/components/schemas/LongLat'
+        brakingDistance:
+          type: number
+          format: double
+        mpg:
+          type: number
+          format: double
+        mil:
+          type: array
+          items:
+            $ref: '#/components/schemas/MilAlert'
+      description: obd2 event data
+    LongLat:
+      type: object
+      properties:
+        longitude:
+          type: number
+          format: double
+        latitude:
+          type: number
+          format: double
+    MilAlert:
+      type: object
+      properties:
+        type:
+          type: integer
+          format: int32
+          enum:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+          description: |
+            Types of anomaly.
+            * 0 - Undefined
+            * 1 - Engine
+            * 2 - Tire Pressure
+            * 3 - Engine Oil
+            * 4 - Brakes
+            * 5 - Engine Coolant
+            * 6 - Battery
+        criticalLevel:
+          type: integer
+          format: int32
+          enum:
+            - 0
+            - 1
+            - 2
+            - 3
+          description: |
+            Types of anomaly.
+            * 0 - Undefined
+            * 1 - Info
+            * 2 - Warning
+            * 3 - Danger
+        content:
+          type: string
+      description: MIL alert information
+    Risk:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        level:
+          type: integer
+          description: level of risk. Maximum is 7.
+        description:
+          type: string
+          description: Short description about this risk.
+      description: Risk information of server.
+    Anomaly:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/UUID'
+        type:
+          $ref: '#/components/schemas/AnomalyType'
+        timestamp:
+          type: integer
+          format: int64
+          description: Date and time.
+      description: An anomaly event.
+    AnomalyType:
+      type: integer
+      format: int32
+      enum:
+        - 0
+        - 1
+      description: |
+        Types of anomaly.
+        * 0 - Detected
+        * 1 - Blocked-
+    AnomalyList:
+      type: object
+      properties:
+        anomalies:
+          items:
+            $ref: '#/components/schemas/Anomaly'
+          description: The anomaly data list.
+      description: A list of anomalies.

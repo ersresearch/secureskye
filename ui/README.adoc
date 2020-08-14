@@ -1,0 +1,297 @@
+= SecureSkye UI module
+nhan.maidothanh <nhanmdt@fsoft.com.vn>
+v0.5.0.M1, 2018/03/12
+:toc:
+:homepage: https://trilliumsecure.com
+:icons: font
+:source-highlighter: pygments
+
+
+== Development
+
+=== Deploy back-end services using Docker
+. Build or pull docker images from server. For building use `gradle buildDocker` at the root folder.
+. Remove `gateway` and `ui` services from deployment.
+
+
+.compose\spring-backend\docker-compose.yml
+[source,yaml]
+----
+#  gateway:
+#    image: 10.0.0.7/secureskye/secureskye/gateway:0.4.0.RELEASE
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#      - "8080:8080"
+#    depends_on:
+#      discovery:
+#        condition: service_healthy
+#  ui:
+#    image: 10.0.0.7/secureskye/secureskye/ui:0.4.0.RELEASE
+----
+
+. Expose all required service for development. OAuth2 is mandatory.
+
+.compose\spring-backend\docker-compose.yml
+[source,yaml]
+----
+  oauth2:
+    image: 10.0.0.7/secureskye/secureskye/oauth2:0.4.0.RELEASE
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/uaa/application/status
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+    ports:
+      - "9876:9876" //<1>
+  vehicle-admin:
+    image: 10.0.0.7/secureskye/secureskye/vehicle-admin:0.4.0.RELEASE
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/application/status
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      oauth2:
+        condition: service_healthy
+    ports:
+      - "8080:8080" //<1>
+----
+<1> Server port can be found at `application.yml#server.port` or `build.gradle#ext.ports` of each module.
+
+[start=4]
+. Run `docker-compose up -d` to start all other services.
+
+=== Deploy local gateway service
+==== Install local gateway service traefik
+Download and install https://github.com/containous/traefik/releases[traefik]
+
+==== Update traefik file to local settings
+
+.trafik.toml
+[source,toml]
+----
+      [[entryPoints.https.tls.certificates]]
+      certFile = "secureskye.crt"
+      keyFile = "secureskye.key"
+----
+
+.trafik.toml
+[source,toml]
+----
+# Load services from Consul
+[consulCatalog]
+endpoint = "localhost:8500"
+
+# Static services
+[file]
+
+[backends]
+  [backends.ui]
+    [backends.ui.servers.ui-0]
+    url = "http://localhost:4200/"
+----
+
+==== Run local traefik service
+`traefik -c traefik.toml`
+
+TIP: `traefik` is the binary file downloaded, name changes according to versions.
+
+
+=== Build and run ui module using angular cli
+. Build `gradle buildClientDev`
+. Start module with `ng serve`
+
+=== Debugging
+Use your farvorite browser debugging tool by going to (https:\\localhost:8754)
+
+== Deployment with NginX (Docker)
+
+Use gradle task `buildDocker` or `pushDocker` to build / push docker image with NginX as server.
+
+Default settings:
+
+* Base docker image: `nginx`
+* Port: 4200
+* Context path: .
+
+TIP: Server's configurations are in `nginx\default.conf`
+
+== Integrate with OAuth2 server
+Refer https://manfredsteyer.github.io/angular-oauth2-oidc/angular-oauth2-oidc/docs[angular-oauth2-oidc] for more detailed information.
+
+=== Configuration
+
+==== AuthGuard
+Re-route to login page if access token is invalid.
+
+.src\app\modules\shared\guard\auth.guard.ts
+[source,typescript]
+  canActivate(): boolean {
+    if (this.oauthService.getAccessToken() == null) {
+      this.router.navigate(['/login']);
+      return false;
+    }
+    return true;
+  }
+
+==== OAuth2 config
+
+.src\app\modules\shared\config\auth.config.ts
+[source,typescript]
+----
+export const authConfig: AuthConfig = {
+  oidc: false, //<1>
+  //loginUrl: 'https://localhost/uaa/oauth/authorize', //<2>
+  tokenEndpoint: 'https://localhost/uaa/oauth/token', //<3>
+  redirectUri: 'https://localhost/#/dashboard', //<4>
+  // logoutUrl: 'https://localhost/uaa/logout.do', //<5>
+  userinfoEndpoint: 'https://localhost/uaa/user',
+  clientId: 'secureskye-webapp-client',
+  dummyClientSecret: 'secureskye', //<6>
+  scope: 'read write'
+};
+----
+<1> Disable OIDC (OpenID Connect) for the momment
+<2> Token request endpoint for Implicit grant type. Not used at the moment.
+<3> Token request endpoint for password grant type.
+<4> Redirect URI after login.
+<5> Redirect URI after logout when using OIDC.
+<6> Not needed as stated in the https://manfredsteyer.github.io/angular-oauth2-oidc/angular-oauth2-oidc/docs[angular-oauth2-oidc] docs but it's required in our project as we use them for client's authentication
+
+.src\app\app.component.ts
+[source,typescript]
+----
+    // Load configurations from config file
+    this.oauthService.configure(authConfig);
+
+    // Use setStorage to use sessionStorage or another implementation of the TS-type Storage
+    // instead of localStorage
+    this.oauthService.setStorage(sessionStorage);
+
+    // Optional
+    this.oauthService.setupAutomaticSilentRefresh();
+
+    // Used in implicit grant type.
+    // This method just tries to parse the token(s) within the url when
+    // the auth-server redirects the user back to the web-app
+    // It doesn't send the user the the login page
+    // this.oauthService.tryLogin().then(value => this.oauthService.loadUserProfile());
+----
+
+=== Login
+We currently use OAuth2's Password Grant Type.=
+
+==== Password Grant Type
+
+[source,typescript]
+----
+this.oauthService.fetchTokenUsingPasswordFlowAndLoadUserProfile(username, password, optionalHeaders);
+----
+
+==== Implicit Grant Type
+
+[source,typescript]
+----
+this.oauthService.initImplicitFlow();
+// fecth user info if needed
+this.oauthService.events.filter(e => e.type === 'token_received').subscribe(e => {
+    this.oauthService.loadUserProfile();
+});
+----
+
+=== Logout
+
+[source,typescript]
+----
+this.oauthService.logOut(); //<1>
+this.router.navigate(['/pages/login']); //<2>
+----
+<1> When using OIDC, pass `true` to stay on current page.
+<2> When not using OIDC, navigate to the logout (login) page.
+
+=== Calling a Web API with an Access Token
+Pass this Header to the used method of the Http-Service within an Instance of the class Headers:
+
+[source,typescript]
+----
+const headers = new Headers({
+    "Authorization": "Bearer " + this.oauthService.getAccessToken()
+});
+----
+
+If you are using the new HttpClient, use the class HttpHeaders instead:
+
+[source,typescript]
+----
+var headers = new HttpHeaders({
+    "Authorization": "Bearer " + this.oauthService.getAccessToken()
+});
+----
+
+TIP: Or using http interceptor implemented `src\app\modules\shared\interceptor\auth.interceptor.ts` for default handling authorization.
+
+=== Generate protobuf
+. Generate protobuf file to javascript
+----
+gradle pbjs
+----
+
+[start=2]
+. Generate typescript from javascript (already included task `ptjs`)
+----
+gradle pbts
+----
+
+=== Call api and decode response to protobuf model
+. Setting headers and respsonseType of HttpClient to handle protobuf or use http interceptor implementation `src\app\modules\shared\interceptor\protobuf.interceptor.ts`.
+
+----
+const pbReq = req.clone({
+    headers: req.headers
+        .append('Accept', 'application/x-protobuf;charset=UTF-8')
+        .append('Accept', 'application/json;charset=UTF-8'),
+    responseType: 'arraybuffer'
+});
+----
+
+[start=2]
+. Decode arraybuffer into protobuf model.
+
+----
+this.http.get(...)
+    .map((resp: ArrayBuffer) => vehicle.admin.VehicleProto.decode(new Uint8Array(resp)))
+    .subscribe((vehicleProto) => {
+      // TODO
+    });
+----
+
+=== Generate favicon
+. Copy target image (svg, png, ...) into src\favicon
+. Configure favicon generation options
+
+.src\favicon\faviconDescription.json
+[source,json]
+----
+{
+    "masterPicture": "../../src/favicon/favicon.png",
+    "iconsPath": "assets/favicon/",
+    ...
+----
+
+[start=3]
+. Generate favicon and inject into `index.html` (already included task `faviconGenerate`)
+----
+gradle faviconInject
+----
+
+TIP: real-favicon api requires internet connection.

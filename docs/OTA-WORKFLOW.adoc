@@ -1,0 +1,285 @@
+= OTA Working Flow
+Phung Tan Sang <sangpt3@fsoft.com.vn>
+:toc:
+:homepage: https://trilliumsecure.com
+:icons: font
+:source-highlighter: pygments
+
+== Purpose
+
+This following guild will describe the flow of software update installation on ecu
+
+== Working Flow
+
+=== 1. Get Vehicle Access Token
+
+First step of this flow you will need to get a `vehicle-access-token`, you will need a `vehicle-client-id` to perform this step
+Then call this api:
+
+[source]
+----
+Endpoint: POST https://{host]/uaa/oauth/token
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request form data:
+    client_id: "{vehicle-client-id}"
+    grant_type: “client_credentials”
+Response:
+{
+    access_token: "xxxx", <1>
+    token_type: "xxxx",
+    expires_in: xxxx, <2>
+    scope: "xxxx"
+}
+----
+
+<1> The `access token` of a vehicle
+<2> After this period of time, the token will be expired
+
+=== 2. Gateway and Ecus Register
+
+In this step we will use the access token in step 1 to register or get an already existed gateway and ecu information
+
+==== 2.1 Register New Gateway
+
+To register a new gateway, use this api
+
+[source]
+----
+Endpoint: POST https://{host}/api/vehicles/ecus
+Header: - Authorization : Bearer <access-token-from-step-1>
+        - Accept : application/json
+        - Content-Type : application/json
+Request Body:
+{
+    "interfaceInfo": {
+        "commProtocol": "HTTPS", // [ CAN, LIN, ETHERNET, HTTP, HTTPS, SSL ]
+        "ecuId": "<64byte-id>"
+    },
+    "gatewayInterfaceInfo": {
+        "ip": "xxxx",
+        "vin": "xxxx"
+    },
+    "securityStatus": "NORMAL" // Inital status should be "NORMAL"
+}
+
+Respone:
+{
+    "id": "<gateway-id>",
+    "interfaceInfo": {
+        "commProtocol": "HTTPS", // [ CAN, LIN, ETHERNET, HTTP, HTTPS, SSL ]
+        "ecuId": "<64byte-id>",
+        "vehicleId": "<vehicle-id>"
+    },
+    "errorCode": {
+        "id": "<error-code-id>"
+    },
+    "gatewayInterfaceInfo": {
+        "ip": "xxxx",
+        "vin": "xxxx"
+    },
+    "securityStatus": "NORMAL"
+}
+----
+
+==== 2.2 Register New Ecu
+
+This api will register an ecu to a gateway, you will use the `gateway-id` in the previous step for this request.
+If the ecu already existed, the server will response with the information of that ecu
+
+[source]
+----
+Endpoint: POST https://{host}/api/vehicles/ecus/{gateway-id}/childEcu
+Header: - Authorization : Bearer <access-token-from-step-1>
+        - Accept : application/json
+        - Content-Type : application/json
+Request Body:
+{
+    "interfaceInfo": {
+        "commProtocol": "HTTPS", // [ CAN, LIN, ETHERNET, HTTP, HTTPS, SSL ]
+        "ecuId": "<64byte-id>"
+    },
+    "securityStatus": "NORMAL" // Inital status should be "NORMAL"
+}
+
+Respone:
+{
+    "id": "<gateway-id>",
+    "interfaceInfo": {
+        "commProtocol": "HTTPS", // [ CAN, LIN, ETHERNET, HTTP, HTTPS, SSL ]
+        "ecuId": "<64byte-id>",
+        "vehicleId": "<vehicle-id>"
+    },
+    "errorCode": {
+        "id": "<error-code-id>"
+    },
+    "securityStatus": "NORMAL"
+}
+----
+
+=== 3. Upload OTA Archive
+
+==== 3.1 OTA Archive Information
+
+The OTA archive will be created by a generator tool, make sure your package meet these requirements:
+
+- Package is supported in `zip` or `tar.gz` format.
+
+- Size of the package must be less than *10 MB*.
+
+- Archive has to contain a `metadata.yaml` file as the first entry in the archive and a `ecus` folder.
+
+===== Metadata file information
+Metadata file has to contains the following information.
+[source,yaml]
+----
+family: <vehicle-model-name> <1>
+category: <archive-category>
+ecus: <2>
+- id: <ecu-id> <3>
+  description: <ecu-description>
+  items: <4>
+  - name: <item-name>
+  - checksum: <item-checksum> <5>
+  - swid: <software-id> <6>
+  - swver: <software-version> <7>
+  - changelog: <update-changelog>
+
+----
+
+<1> The vehicle's model this update is for. This has to be equal to one of the vehicle models' name.
+
+<2> ECUs list
+
+<3> 64 Bytes Ecu id, including:
+- Hardware version - 8bytes
+- Software version - 8bytes
+- Calibration version - 8bytes
+- Special version - 8bytes
+- Secure Go version - 8bytes
+- Secure OTA version - 8bytes
+- Secure IXS version - 8bytes
+- Secure Rule Database - 8bytes
+
+<4> Contains one or more actual files that are targeted to the ECU.
+This is usually the update data, but can technically be anything.
+
+<5> A SHA-256 digest of the content of the update data.
+
+<6> Id of the updated software
+
+<7> The version of the update. Has to follow https://semver.org[SemVer^].
+
+===== Ota Archive Structure
+
+----
+/ecus/<ecu-id>/<item-name>
+----
+
+This has to exactly match with the information from the metadata.yaml.
+
+=== 4. Download An Update
+
+When the OTA-package is successfully uploaded to the server, new version of the software will be visible on the UI,
+along with that, the `Update` button in that column will also available.
+Then click the `Update` button, cloud server will publish the archive, by this api
+
+[source]
+----
+Endpoint: Put api/software/{softwareId}/publish
+Header: - Authorization : Bearer <access-token-from-step-1>
+----
+
+When the ecu initial the installation, an api will be called to notify the status of the installation.
+In this case, the status will be changed to `Installing`.
+
+You will need `ecu-id` (not the 64 bytes id) from step 2.2 and `software-id` in the database.
+
+For now `software-id` is being hard-coded in the database and will be one of these:
+
+- Firmware: 95989ee7-c3be-11e8-af4b-0242ac120011
+- SecureGo: 9912e1ac-5a90-42b2-b2fc-d09825fce7eb
+- SecureOTA: 5b3aea21-139f-48a8-9d89-e58b4b936ab2
+- SecureSkye: 4db62a48-1f75-4f4f-b85a-c282aea7ece1
+- SecureIXS: 42f23db7-608d-44a8-aad4-32191e7f73d2
+- IXS Rules: 7198e87d-e7cd-4091-bd16-92e0897f271e
+
+By default, this api will tells the server that the ecu is installing the latest version of the software.
+But if the ecu is installing a specific version, you can notify the server by change the version at the end of the request,
+from `latest` to `the-version-is-being-installing` (exp: 0.0.2, 0.1.2,..). You can remove the `@{version}` part, and the
+server will understand that the ecu is installing the latest version by default.
+
+[source]
+----
+Endpoint: POST https://{host}/api/vehicles/ecus/{ecu-id}/software/install/{software-id}@{version(default = latest)}
+Header: - Authorization : Bearer <access-token-from-step-1>
+         - Accept : application/json
+Response:
+{
+    "id": "2dad423b-c3e0-11e8-8f33-0242ac12000f", // installation-id
+    "software": { // software information
+        "id": "xxxx",
+        "name": "xxxx",
+        "description": "xxxx",
+        "latest": { //latest version of the software
+            "id": "xxxx",
+            "versionId": "xxxx",
+            "version": "xxxxx",
+            "availableSince": "xxxx",
+            "changelog": "xxxx"
+        }
+    },
+    "current": { // current version of the software
+        "id": "xxxx",
+        "versionId": "xxxx",
+        "version": "xxxx",
+        "availableSince": "xxxx",
+        "changelog": "xxxx"
+    },
+    "status": "INSTALLING",
+    "lastModified": "xxxxx"
+}
+----
+
+=== 5. Installation Status Response
+
+When the installation is done, Ecu will notify to server the status of the installation.
+You will take the `installation-id` in the previous step to use it in this api.
+
+[source]
+----
+Endpoint: PUT https://{host}/api/vehicles/ecus/{ecu-id}/software/status/{installation-Id}
+Header:
+    - Authorization : Bearer <access-token-from-step-1>
+	- Accept : application/json
+Body:
+{
+	"status": "SUCCESS" // Installation status [INSTALLING, UNINSTALLING, SUCCESS, ERROR]
+}
+Response:
+{
+    "id": "2dad423b-c3e0-11e8-8f33-0242ac12000f", // installation-id
+    "software": { // software information
+        "id": "xxxx",
+        "name": "xxxx",
+        "description": "xxxx",
+        "latest": { //latest version of the software
+            "id": "xxxx",
+            "versionId": "xxxx",
+            "version": "xxxxx",
+            "availableSince": "xxxx",
+            "changelog": "xxxx"
+        }
+    },
+    "current": { // current version of the software
+        "id": "xxxx",
+        "versionId": "xxxx",
+        "version": "xxxx",
+        "availableSince": "xxxx",
+        "changelog": "xxxx"
+    },
+    "status": "SUCCESS", // New status of the installation
+    "lastModified": "xxxxx"
+}
+----

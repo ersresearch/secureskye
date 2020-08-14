@@ -1,0 +1,75 @@
+#
+# Copyright (C) 2017-2018 Trillium Inc. <support@trilliumsecure.com>
+#
+
+server:
+  use-forward-headers: true
+  servlet:
+    context-path: /saa
+
+spring:
+  datasource:
+    url: jdbc:postgresql://192.168.10.220:5432/secureskye
+    username: postgres
+    password: postgres
+  thymeleaf:
+    cache: false
+  cloud:
+    consul:
+      host: 192.168.10.220
+      discovery:
+        instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+        health-check-path: /saa/actuator/health
+        tags: >
+          traefik.frontend.rule=PathPrefix:/saa
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,prometheus
+
+---
+spring:
+  profiles: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/secureskye
+  cloud:
+    consul:
+      host: localhost
+
+server:
+  port: 11010
+
+---
+spring:
+  profiles: debug
+
+logging:
+  level:
+    org.springframework.security: debug
+    org.springframework.cloud: debug
+
+---
+spring:
+  profiles: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/secureskye
+  cloud:
+    consul:
+      host: discovery
+      discovery:
+          instance-id: ${spring.application.name}:${HOSTNAME}
+          prefer-ip-address: true
+
+server:
+  undertow:
+    accesslog:
+      enabled: true
+      dir: /var/log
+
+logging:
+  path: /var/log
+  level:
+    root: WARN
+    jp.co.trillium.*: INFO

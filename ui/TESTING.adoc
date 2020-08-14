@@ -1,0 +1,328 @@
+= UI Testing
+Dominik Nakamura <dominik.nakamura@trilliumsecure.com>
+:toc: left
+:homepage: http://trilliumsecure.com
+:icons: font
+:imagesdir: ./doc-assets
+:source-highlighter: pygments
+
+https://angular.io/guide/testing[Angular testing] is done with http://jasmine.github.io/2.4/introduction.html[Jasmine test framework] and https://karma-runner.github.io/1.0/index.html[karma test runner].
+
+== How to
+
+=== Execute
+
+.With `yarn`
+----
+yarn run test
+----
+
+.With Angular CLI
+----
+ng test
+----
+
+=== Debug
+
+==== Execute with chrome debug option
+
+
+.With `yarn`
+----
+yarn run testDebug
+----
+
+.With Angular CLI
+----
+ng test --browsers ChromeDebug
+----
+
+==== Attach Visual Studio Code debugger to chrome
+Using pre-defined debug configuration `secureskye-ui-ut-debug`
+
+=== Karma Test Report
+When execute test, test report will be launched automatically via browser at `localhost:9876`
+
+image::karma-test-report.png[]
+
+== Unit Test
+Each unit has a `.spec.ts` file covers all the features to be tested.
+
+=== Component
+Combination of HTML template and TypeScript class as the V and C of MVC pattern. A component can be a standalone component that represents a fully functional feature or a partial component. The former should be main focus point.
+
+==== Layout Rendering
+Check all the noticable elements on the layout are rendered correctly.
+
+.dashboard.component.spec.ts
+[source,typescript]
+----
+it('Jumbotron is displayed when no statistics available', () => {
+    // Tests
+    const jumbotron = fixture.debugElement.query(By.css('.jumbotron'));<1>
+    expect(jumbotron).toBeDefined();
+});
+----
+<1> Get the rendered element for testing.
+
+==== Data binding
+Check if data is bound and displayed correctly. We can provide mockup data directly or though mockup services (mockup HTTP requests).
+
+.vehicle-list-component.spec.ts
+[source,typescript]
+----
+it('Vehicle data is displayed with correct info', () => {
+    // Mockup data
+    httpMock
+        .expectOne('/api/vehicles')
+        .flush(encode(vehicle.admin.VehicleListProto, { data: [vehicleData] }));<1>
+    fixture.detectChanges();<2>
+
+    const vehicleNameTd = fixture.debugElement.query(By.css('td.vehicle-name'));
+    expect(vehicleNameTd.nativeElement.textContent).toEqual(vehicleData.name);
+    const vehicleModelTd = fixture.debugElement.query(By.css('td.vehicle-model'));
+    expect(vehicleModelTd.nativeElement.textContent).toEqual(vehicleData.modelName);
+});
+----
+<1> Provide data though mockup HTTP requests.
+<2> Trigger component changes detection so that layout is re-rendered.
+
+==== Route navigation
+If there's major navigation link on page(eg: from a list to detail), it should be tested too.
+
+.vehicle-list-component.spec.ts
+[source,typescript]
+----
+it(`Vehicle view command is navigable to '/vehicle/:id'`, async(() => {<1>
+    // Mockup data
+    httpMock
+        .expectOne('/api/vehicles')
+        .flush(encode(vehicle.admin.VehicleListProto, { data: [vehicleData] }));
+    fixture.detectChanges();
+
+    // Tests
+    const viewDetailAnchor = fixture.debugElement.query(By.css('.btn.btn-secondary[href]'));
+    viewDetailAnchor.nativeElement.click();
+    fixture.whenStable().then(() => expect(router.routerState.snapshot.url).toBe(`/${vehicleData.id}`));
+}));
+----
+<1> When we put test in a async method (promise, abservable, ...), `async` wrapper must be present.
+
+==== Child component
+When a component contains another child component, it should be tested that the child component is loaded correctly.
+
+.vehicle-list-component.spec.ts
+[source,typescript]
+----
+it('Vehicle list of 10 records loaded with pagination', () => {
+    // Mockup data
+    httpMock
+        .expectOne('/api/vehicles')
+        .flush(encode(vehicle.admin.VehicleListProto, { data: vehicleData }));
+    fixture.detectChanges();
+
+    // Tests
+    expect(component.items.data.length).toEqual(10);
+    vehicleData
+        .map(value => vehicle.admin.VehicleProto.create(value))
+        .forEach((value, index) => expect(component.items.data[index]).toEqual(value));
+    // Pagination tests
+    const paginationComp = fixture.debugElement.query(By.directive(PaginationComponent)).componentInstance as PaginationComponent;<1>
+    expect(paginationComp.totalItems).toEqual(10);
+    expect(paginationComp.totalPages).toEqual(2);
+});
+----
+<1> Retrieve the child component.
+
+==== Form
+Form validation.
+
+.vehicle-detail.component.spec.ts
+[source,typescript]
+----
+it('Vehicle form is invalid when initialized', () => {
+    expect(component.vehicleForm.valid).toBeFalsy();
+});
+
+it('Vehicle name validity', () => {
+    const control = component.vehicleForm.get('vehicleName');
+    expect(control.valid).toBeFalsy();
+    control.setValue('Sample Vehicle');
+    expect(control.valid).toBeTruthy();
+});
+----
+
+==== Functionality
+Unit-level functionality
+
+.vehicle-detail.component.spec.ts
+[source,typescript]
+----
+it(`Vehicle registration succeed then display vehicle's clientID in modal dialog`, async(() => {
+    // Mockup data
+    httpMock
+        .expectOne({ method: 'GET', url: '/api/vehicles/models' })
+        .flush(encode(vehicle.admin.VehicleModelListProto, {
+            model: [{ id: '1', name: 'Test Model', }]
+        }));
+    fixture.detectChanges();
+
+    component.vehicleForm.setValue({
+        vehicleName: 'Test Vehicle',
+        vehicleModel: '1'
+    });
+
+    component.registerVehicle();
+
+    // Mockup response
+    httpMock
+        .expectOne({ method: 'POST', url: '/api/vehicles' })
+        .flush(encode(vehicle.admin.RegisteredVehicleProto, {
+            clientId: 'vehicle-1'
+        }));
+    const globalDialogService = TestBed.get(GlobalDialogService) as GlobalDialogService;
+    const dialogComponent = globalDialogService.getCurrentModal().content as GlobalDialogComponent;
+    expect(dialogComponent).toBeDefined();
+    expect(dialogComponent.dialog.content).toContain('vehicle-1');
+}));
+----
+
+=== Service
+Provide logic to components but mostly to send http request. So UT for services should be already in UT for components.
+
+.vehicle.service.ts
+[source,typescript]
+----
+describe('VehicleService', () => {
+    let service: VehicleService;
+    let httpMock: HttpTestingController;
+
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: appImports,
+            providers: appProviders
+        }).compileComponents();
+        service = TestBed.get(VehicleService);
+        httpMock = TestBed.get(HttpTestingController);
+    });
+
+    afterEach(() => {
+        httpMock.verify();<1>
+    });
+
+    it(`#getListVehicles() return no data`, async(() => {
+        service.getListVehicles().subscribe((resp) => {
+            expect(resp.data).toEqual([])
+        });
+
+        httpMock
+            .expectOne('/api/vehicles')
+            .flush(encode(vehicle.admin.VehicleListProto, { data: [] }));
+    }));
+
+    it(`#getListVehicles() return 2 records`, async(() => {
+        const respData = [
+            vehicle.admin.VehicleProto.create({
+                id: '1',
+                modelId: '1',
+                modelName: 'Test Model',
+                name: 'Test Vehicle',
+                tfa: totp.TwoFactorAuthenticationStatusProto.DISABLED
+            }),
+            vehicle.admin.VehicleProto.create({
+                id: '2',
+                modelId: '1',
+                modelName: 'Test Model',
+                name: 'Test Vehicle 2',
+                tfa: totp.TwoFactorAuthenticationStatusProto.PENDING
+            })
+        ]
+
+        service.getListVehicles().subscribe((resp) => {
+            expect(resp.data).toEqual(respData)
+        });
+
+        httpMock
+            .expectOne('/api/vehicles')
+            .flush(encode(vehicle.admin.VehicleListProto, { data: respData }));<2>
+    }));
+});
+----
+<1> Verify that there is no requests other than our expected.
+<2> Use `encode` to quickly convert protobuff message to `ArrayBuffer`.
+
+=== Routing module
+Every module has a `-routing.module.ts` file, describing all the accessible paths. They should be tested to be navigable and resolved correctly.
+
+.vehicle-routing.module.spec.ts
+[source,typescript]
+----
+describe('VehicleRoutingModule', () => {
+    let httpMock: HttpTestingController;
+    let router: Router;
+
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [
+                ...appImports,
+                RouterTestingModule.withRoutes(routes),<1>
+                VehicleModule<2>
+            ],
+            providers: appProviders,
+        }).compileComponents();
+        router = TestBed.get(Router);
+        httpMock = TestBed.get(HttpTestingController);
+
+        // Mockup data provided for route data resovler.
+        router.events.pipe(
+            filter((e) => e instanceof ResolveStart),
+            delay(100),<3>
+        ).subscribe(() => {
+            httpMock.match('/api/vehicles/1').forEach((req) =><4>
+                req.flush(encode(vehicle.admin.VehicleProto, {
+                    id: '1',
+                    name: 'Test Vehicle'
+                }))
+            );
+        });
+    });
+
+    it(`'/' is accessible`, async(() => {
+        router.navigate(['/']).then(() => expect(router.routerState.snapshot.url).toEqual('/'));
+    }));
+
+    it(`'/register' is accessible`, async(() => {
+        router.navigate(['/register']).then(() => expect(router.routerState.snapshot.url).toEqual('/register'));
+    }));
+
+    it(`'/:vehicleId' is accessible`, async(() => {
+        router.navigate(['1']).then(() => expect(router.routerState.snapshot.url).toEqual('/1'));
+    }));
+
+    it(`'/:vehicleId/monitoring' is accessible`, async(() => {
+        router.navigate(['/1/monitoring']).then(() => expect(router.routerState.snapshot.url).toEqual('/1/monitoring'));
+    }));
+
+    it(`'/:vehicleId/route' is accessible`, async(() => {
+        router.navigate(['/1/route']).then(() => expect(router.routerState.snapshot.url).toEqual('/1/route'));
+    }));
+
+    it(`'/:vehicleId/route/:routeId/detail' is accessible`, async(() => {
+        router.navigate(['/1/route/1/detail']).then(() => expect(router.routerState.snapshot.url).toEqual('/1/route/1/detail'));
+    }));
+});
+
+----
+<1> Import route from the actual routing module instead of mockup one.
+<2> Import the related module to have all the components ready.
+<3> Due to the resolver activation timing is not certant, we have to use `delay` to ensure request has been made.
+<4> `match` instead of `expectOne` because some spec doesn't have resolver but the event still fires. This will be changed in the future version of Angular.
+
+=== Others
+Other files that can be target for testing if we want thorough UT.
+
+==== Route Guard
+Test if guard is protecting some route from unauthenticated / unauthorized user or other logics.
+
+==== HTTP Interceptor
+Test if interceptor working properly (Protobuf message inteceptor, OAuth2 interceptor).

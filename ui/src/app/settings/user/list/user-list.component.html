@@ -1,0 +1,65 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-5">
+              <h3 class="card-title clearfix">Users</h3>
+            </div>
+            <div class="col-7 text-right">
+              <a class="btn btn-primary" [routerLink]="['..', 'register']">
+                <i class="fa fa-user"></i>&nbsp;Add new user</a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th class="text-center">
+                        <i class="fa fa-user"></i>
+                      </th>
+                      <th class="user-name">Display Name</th>
+                      <th>Email</th>
+                      <th>First Name</th>
+                      <th>Middle Name</th>
+                      <th>Last Name</th>
+                      <th>Status</th>
+                      <th class="operation"></th>
+                    </tr>
+                  </thead>
+                  <tbody *ngIf="items">
+                    <tr *ngFor="let item of items | slice : (userListPageNo-1)*itemsPerPage : userListPageNo*itemsPerPage">
+                      <td class="text-center">
+                        <ngx-avatar [facebookId]="item.avatar3rdPartyMap['facebook']" [googleId]="item.avatar3rdPartyMap['google']" [twitterId]="item.avatar3rdPartyMap['twitter']"
+                          [vkontakteId]="item.avatar3rdPartyMap['vkontakte']" [githubId]="item.avatar3rdPartyMap['github']"
+                          [name]="item.avatar3rdPartyMap['initials']" [src]="item.avatar3rdPartyMap['img']" [round]="true"
+                          [bgColor]="'#536c79'" size="35" class="d-inline-block avatar-word"></ngx-avatar>
+                      </td>
+                      <td class="user-name">{{ item.displayName }}</td>
+                      <td class="email">{{ item.email }}</td>
+                      <td class="first-name">{{ item.firstName }}</td>
+                      <td class="middle-name">{{ item.middleName }}</td>
+                      <td class="last-name">{{ item.lastName }}</td>
+                      <td class="user-enabled">
+                        <span class="badge badge-success" *ngIf="item.enabled">ACTIVE</span>
+                        <span class="badge badge-warning" *ngIf="!item.enabled">INACTIVE</span>
+                      </td>
+                      <td class="operation text-right">
+                        <a class="btn btn-secondary" [routerLink]="['..', item.id]">
+                          View</a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <pagination *ngIf="items" [totalItems]="items.length" [(ngModel)]="userListPageNo" [maxSize]="6" [itemsPerPage]="itemsPerPage"></pagination>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

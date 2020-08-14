@@ -1,0 +1,108 @@
+= SecureSkye Google Cloud deployment with Terraform
+nhan.maidothanh <nhanmdt@fsoft.com.vn>
+v0.5.0.M1, 2018/03/12
+:toc:
+:homepage: https://trilliumsecure.com
+:icons: font
+
+== Initializations
+=== Download & install
+. Download from https://www.terraform.io/downloads.html
+. Add executable path to `PATH`
+
+=== Initialization
+Initialize Terraform
+
+.CMD
+[source]
+----
+cd terraform
+terraform init
+----
+
+=== Setup google cloud credentials
+. Go to the google cloud Service Account page `https://console.cloud.google.com/iam-admin/serviceaccounts/project?project=<project_id>`
+. Create or retrieve the key of your service acount for terraform. Usually the `Compute Engine default service account` created when you enabled Compute Engine API.
+. Save it as `credentials.json` or change the configurations for `google_cloud.credentials_file` below. 
+
+TIP: Google cloud credential key json structure should looks like
+[source,json]
+----
+{
+  "type": "",
+  "project_id": "",
+  "private_key_id": "",
+  "private_key": "",
+  "client_email": "",
+  "client_id": "",
+  "auth_uri": "",
+  "token_uri": "",
+  "auth_provider_x509_cert_url": "",
+  "client_x509_cert_url": ""
+}
+----
+
+TIP: For security reason, you should not commit the credential file to git.
+
+== Configurations
+Below are available configuration for deployment and their default values.
+
+terraform.tfvars
+[source]
+----
+google_cloud {
+  credentials_file   = "credentials.json"
+  project_id         = "secure-skye"
+  region             = "asia-northeast1"
+  container_registry = "asia.gcr.io"
+
+  kubernetes.zone               = "asia-northeast1-a"
+  kubernetes.additional_zones   = ""
+  kubernetes.machine_type       = "n1-standard-4"
+  kubernetes.initial_node_count = 3
+  kubernetes.disk_size_gb       = "100"
+  kubernetes.disable_dashboard  = false
+}
+
+modules {
+  defaul_gcr = "asia.gcr.io"
+
+  cassandra.storage = "10Gi"
+  postgres.storage  = "10Gi"
+
+  oauth2.version          = "latest"
+  vehicle_admin.version   = "latest"
+  vehicle_message.version = "latest"
+  gateway.version         = "latest"
+  ui.version              = "latest"
+}
+----
+
+== Structure
+=== Main
+|===
+|File |Desc
+|terraform.tf|Main script
+|terraform.tfvars|Variable file for main script
+|terraform.tfstate, terraform.backup|Saved state of actual resources on cloud
+|credentials.json|Credential file for google cloud connection
+|===
+
+=== Modules
+==== cassandra
+For cassandra db
+
+==== postgres
+For postgresql db
+
+==== discovery
+For discovery module (consul)
+
+==== gateway
+For gateway module (traefik)
+
+==== generic-deployment
+For our usual module (`ClusterIP` service with a single port mapping)
+
+=== Misc
+`.terraform` folder contains built modules & plugins, should not be committed.

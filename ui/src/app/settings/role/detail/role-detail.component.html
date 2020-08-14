@@ -1,0 +1,66 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title mb-0" *ngIf="role">Role
+            <small class="text-muted small text-uppercase">{{role.id}}</small>
+          </h3>
+          <h3 class="card-title mb-0" *ngIf="!role">Role Add
+          </h3>
+          <hr>
+          <div *ngIf="roleForm" [formGroup]="roleForm">
+            <!-- Role name -->
+            <div class="form-group row">
+              <label for="role-name" class="col-sm-2 col-form-label required">Role name </label>
+              <div class="col-sm-10">
+                <input type="text" formControlName="name" class="form-control" id="role-name" [ngClass]="fieldValidationClass('name')">
+                <div class="invalid-feedback" *ngIf="fieldValidationError('name', 'required')">Role name required!</div>
+              </div>
+            </div>
+            <!-- /Role name -->
+            <!-- Authorities -->
+            <div class="form-group row">
+              <label for="authorities" class="col-sm-2 col-form-label">Authorities</label>
+              <div class="col-sm-10">
+                <div class="table-responsive">
+                  <table class="table table-bordered table-sm">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th *ngFor="let scope of scopeList" class="text-center text-uppercase">{{scope}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let module of moduleList">
+                        <th>
+                          <div>{{module.name}}</div>
+                          <small class="text-muted">{{module.description}}</small>
+                        </th>
+                        <td *ngFor="let scope of scopeList" class="text-center align-middle">
+                          <ng-container *ngIf="authoritiesMap[module.name+':'+scope]">
+                            <label class="switch switch-pill switch-{{roleService.colorAuthority(authoritiesMap[module.name+':'+scope])}} mb-0">
+                              <input type="checkbox" class="switch-input" [formControlName]="module.name+':'+scope">
+                              <span class="switch-slider"></span>
+                            </label>
+                          </ng-container>
+                          <span *ngIf="!authoritiesMap[module.name+':'+scope]" class="text-secondary font-italics">n/a</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <!-- /Authorities -->
+          </div>
+        </div>
+        <div class="card-footer" *ngIf="roleForm">
+          <button type="button" class="btn btn-success group-fix" *ngIf="!role" (click)="addRole()">Add</button>
+          <button type="button" class="btn btn-success group-fix" *ngIf="role" (click)="updateRole()">Update</button>
+          <button type="button" class="btn btn-danger group-fix" *ngIf="role" (click)="deleteRole()">Remove</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

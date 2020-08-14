@@ -1,0 +1,80 @@
+#
+# Copyright (C) 2017-2018 Trillium Inc. <support@trilliumsecure.com>
+#
+
+spring:
+  cloud:
+    consul:
+      host: 192.168.10.220
+      discovery:
+        instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+        health-check-path: /actuator/health
+        tags: >
+          traefik.frontend.rule=PathPrefixStrip:/internal/mongodb-init
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+mongodb-init:
+  config:
+    name: configserver
+    master: mongodb-config-master
+    slaves:
+    - mongodb-config-slave-1
+    - mongodb-config-slave-2
+  shards:
+  - name: shard1
+    master: mongodb-shard-1-master
+    slaves:
+    - mongodb-shard-1-slave-1
+    - mongodb-shard-1-slave-2
+  - name: shard2
+    master: mongodb-shard-2-master
+    slaves:
+    - mongodb-shard-2-slave-1
+    - mongodb-shard-2-slave-2
+  - name: shard3
+    master: mongodb-shard-3-master
+    slaves:
+    - mongodb-shard-3-slave-1
+    - mongodb-shard-3-slave-2
+  routers:
+  - mongodb-router-1
+  - mongodb-router-2
+  databases:
+  - secureskye
+
+---
+spring:
+  profiles: local
+  cloud:
+    consul:
+      host: localhost
+
+---
+spring:
+  profiles: docker
+  cloud:
+    consul:
+      host: discovery
+      discovery:
+          instance-id: ${spring.application.name}:${HOSTNAME}
+          prefer-ip-address: true
+
+server:
+  undertow:
+    accesslog:
+      enabled: true
+      dir: /var/log
+
+logging:
+  path: /var/log
+  level:
+    root: WARN
+    jp.co.trillium.*: INFO

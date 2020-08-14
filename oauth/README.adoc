@@ -1,0 +1,295 @@
+= OAuth2 Authorization Provider Server's How-Tos
+nhan.maidothanh <nhanmdt@fsoft.com.vn>
+v0.5.0.M1, 2018/03/12
+:toc:
+:homepage: https://trilliumsecure.com
+:icons: font
+
+
+See <<../README.adoc#oauth2>>
+
+== Enable JWT OAuth2 for resource server (accepts token from both UAA & SAA)
+=== Dependencies
+
+.build.gradle
+[source,groovy]
+----
+implementation project(':oauth-common')
+
+implementation 'org.springframework.boot:spring-boot-starter-security'
+
+implementation "org.springframework.security.oauth:spring-security-oauth2:$springOauthVersion"
+implementation "org.springframework.security:spring-security-jwt:$springJwtVersion"
+----
+
+=== JWT pub key
+Add the following snippet to your `build.gradle` file to automatically copy the public key during creation of the jar
+file.
+
+[source,groovy]
+----
+processResources {
+    from(rootProject.file('oauth/jwt')) {
+        include 'jwt.pub'
+    }
+}
+----
+
+=== Configuration
+
+.ResourceServerConfiguration.kt
+[source,kotlin]
+----
+@Configuration
+@EnableResourceServer
+@EnableJwtOAuth2ResourceServer <1>
+class ResourceServerConfiguration(
+        private val jwtOAuth2TokenExtractor: JwtOAuth2BearerTokenExtractor,
+        private val jwtOAuth2AuthenticationManager: OAuth2AuthenticationManager
+) : ResourceServerConfigurerAdapter() {
+    /**
+     * [ResourceServerConfigurerAdapter.configure]
+     */
+    override fun configure(resources: ResourceServerSecurityConfigurer) {
+        resources
+            .resourceId("vehicle-admin")
+            .tokenExtractor(jwtOAuth2TokenExtractor)
+            .authenticationManager(jwtOAuth2AuthenticationManager)
+    }
+}
+----
+<1> Enable JWT OAuth 2 resources server
+
+== Enable JWT OAuth2 client with FeignClient
+=== Dependencies
+.build.gradle
+[source,groovy]
+----
+implementation project(':oauth-common')
+
+implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+implementation 'org.springframework.cloud:spring-cloud-starter-security'
+----
+
+=== Enable annotation
+.XXXApplication.kt
+[source,kotlin]
+----
+@EnableJwtOAuth2Client
+class VehicleMessageApplication
+----
+
+=== Feign configuration
+.FeignConfiguration.kt
+[source,kotlin]
+----
+/**
+ * Special OAuth2 request interceptor for Feign to forward tokens.
+ */
+@Bean
+fun oAuth2FeignRequestInterceptor(
+        secureSkyeClientCredentialsResourceDetails: SecureSkyeClientCredentialsResourceDetails,
+        loadBalancerInterceptor: LoadBalancerInterceptor
+) = JwtOAuth2FeignRequestInterceptor(secureSkyeClientCredentialsResourceDetails, loadBalancerInterceptor)
+----
+
+=== Client details
+.application.yml
+[source,groovy]
+----
+security:
+  oauth2:
+    secureskye:
+      client:
+        access-token-uri: http://saa/saa/oauth/token <1>
+        client-id: secureskye-vehicle-message-service
+        client-secret: secureskye-service
+        scope: none
+        added-info: jwt <2>
+----
+<1> Uses service id registered in service discovery instead of exact URL for load balancing
+<2> `jwt` if the UAA or SAA using JWT instead of oauth access token.
+
+== Add new resource group
+=== Register in DB
+Append resource id to oauth client `[oauth_client_details].[resource_ids]`
+
+=== Config file
+
+.OAuth2ResourceServerConfig
+[source,java]
+----
+const val TEST_RESOURCE_ID = "secureskye-test-services"
+const val TEST_RESOURCE_PREFIX = "api/v1/testOAuth2"
+
+/**
+ * Resource configuration for Test apis
+ */
+@Configuration
+@EnableResourceServer
+class TestResourceConfig(
+        private val dataSource: DataSource
+) : ResourceServerConfigurerAdapter() {
+
+    override fun configure(resources: ResourceServerSecurityConfigurer) {
+        val tokenStore = JdbcTokenStore(dataSource)
+        resources
+                .resourceId(TEST_RESOURCE_ID)
+                .tokenStore(tokenStore)
+    }
+
+    override fun configure(http: HttpSecurity) {
+        http
+                .requestMatchers()
+                .antMatchers("/$TEST_RESOURCE_PREFIX/**")
+                .and()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.GET, "/**").access("#oauth2.hasScope('read')")
+                .antMatchers(HttpMethod.POST, "/**").access("#oauth2.hasScope('write')")
+                .antMatchers(HttpMethod.PATCH, "/**").access("#oauth2.hasScope('write')")
+                .antMatchers(HttpMethod.PUT, "/**").access("#oauth2.hasScope('write')")
+                .antMatchers(HttpMethod.DELETE, "/**").access("#oauth2.hasScope('write')")
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+    }
+
+}
+----
+
+==== Controller file
+
+.OAuth2TestController
+[source,kotlin]
+----
+@RestController
+@RequestMapping(OAuth2ResourceServerConfig.TEST_RESOURCE_PREFIX)
+class OAuth2TestController {
+
+    @GetMapping("whoAmI")
+    fun whoAmI(me: Principal) = me
+
+    @GetMapping("doIhaveAdminAuthority")
+    @PreAuthorize("hasAuthority('admin:read')")
+    fun doIhaveAdminAuthority(): String = "yes"
+
+}
+----
+
+== Add role for user
+=== Register in DB
+. Add role in `[role]`
+. Assign role to specific user in `[credentials_roles]`
+
+=== Check role of user
+
+[source,kotlin]
+----
+@GetMapping("doIhaveAdminRole")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
+fun doIhaveAdminRole(): String = "yes"
+----
+
+== Add authority for role
+=== Register in DB
+. Add authority in `[authority]`
+. Assign authority to specific role in `[roles_authorities]`
+
+=== Check authority of user
+
+[source,kotlin]
+----
+@GetMapping("doIhaveAdminAuthority")
+@PreAuthorize("hasAuthority('admin:read')")
+fun doIhaveAdminAuthority(): String = "yes"
+----
+
+== Add third party client with Authorization Flow
+=== Modify in DB
+. Add third party client in `[oauth_client_detail]` with required scope
+
+== Add scope for client
+=== Modify in DB
+. Update scope in `[oauth_client_detail]`
+
+=== Check scope of client
+[source,kotlin]
+----
+@GetMapping("canIGetUserInfo")
+@PreAuthorize("#oauth2.hasScope('user_attribute_read')") //TBD
+fun canIGetUserInfo(): String = "yes"
+----
+
+== Add authority for client
+=== Modify in DB
+. Update authorities in `[oauth_client_detail]`
+
+=== Check authority of client
+
+[source,kotlin]
+----
+@GetMapping("canItCallGetAPI")
+@PreAuthorize("#oauth2.clientHasRole('read')")
+fun canItCallGetAPI(): String = "yes"
+----
+
+
+== Password grant type
+=== Request access token
+
+|===
+|Url 2.1+|https://localhost/uaa/oauth/token
+|Method 2.1+|POST
+1.2+|Header
+|[.line-through]#Authorization# |[.line-through]#Basic <Base64 encoded string of 'clientid:clientsecret'>#
+|Content-type |application/x-www-form-urlencoded; charset=utf-8
+1.4+|Request body
+
+(Type=URLencoded form data)
+|client_id |<clientid>
+|client_secret|<clientsecret>
+|grant_type |password
+|username |<username>
+|password |<password>
+|===
+
+[TIP]
+Header (Authorization Basic XXX) is no longer used for authenticating clients. Use form parameters (client_id, client_secret) instead.
+
+=== Response
+[source,json]
+{
+  "access_token": "f4132b88-b054-476a-b009-340be8d4cfc7",
+  "token_type": "bearer",
+  "expires_in": 3238,
+  "scope": "read write"
+}
+
+== Implicit grant type
+=== Request access token
+----
+https://localhost/oauth/authorize?client_id=<clientid>&response_type=token&redirect_uri=<targeturi>
+----
+* clientid: application id registered in table `oauth_client_details`
+* targeturi: uri of target resource
+
+=== Response
+----
+<redirecturi>#access_token=<accesstoken>&token_type=<tokentype>&expires_in=<expire>&scope=<scope>
+----
+* redirecturi: same as targeturi
+* accesstoken: access token generated
+* tokentype, expire, scope: other information
+
+== Authorization grant type
+=== Request access token with Postman
+
+* clientid: application id registered in table `oauth_client_details`
+* callbackURL: https://www.getpostman.com/oauth2/callback
+* authURL: /uaa/oauth/authorize
+* tokenURL: /uaa/oauth/token
+* clientID: third_party_test_app
+* clientSecret: secureskye
+
+=== Response
+
+* accesstoken: access token generated
+* refeshtoken, expire, scope: other information

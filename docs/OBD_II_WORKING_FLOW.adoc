@@ -1,0 +1,211 @@
+= OBD-II Device Working Flow
+Phung Tan Sang <sangpt3@fsoft.com.vn>
+:toc:
+:homepage: https://trilliumsecure.com
+:icons: font
+:source-highlighter: pygments
+
+== Purpose
+
+This article will show you the working flow of a Obd-II device. Start with how to register a new device
+and then send data from an Obd-II device to cloud server through rest api
+
+== Working Flow
+
+NOTE: If you're working in embedded team, you don't have to perform 2 first steps and you can move on to `step 3`.
+But, before that, you will have to contact cloud server team to get some information needed to perform `step 3`.
+Because in two first steps, you will need authorization of Admin (or User), and in the vehicle, you can only get
+authorization for vehicle and obd-II device.
+
+=== 1. Register An OBD-II Device
+
+Register an obd-II device to the server.
+After that, the Obd-II device will have a `client-id`, we will use this Id to get `access token` for the device.
+To perform this step you will need `User-admin-access-token`
+
+[source]
+----
+Endpoint: POST https://{host}/api/obd2devices
+Authorization: Bearer {Admin-user-access-token}
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request Body:
+{ <1>
+    family: "",
+    kernel: "",
+    macAddress: ""
+}
+Response:
+{ <2>
+    device:  {
+        family: "",
+        kernel: "",
+        macAddress: ""
+    },
+    clientId: "" <3>
+}
+----
+
+<1> Information of an Obd-II device
+<2> Response from server after successful registered. Contain device's information and its `clientId`
+<3> `Client id` of an Obd-II device
+
+=== 2. Register An OBD-II Device To A Vehicle
+
+An Obd-II device must be attached to a vehicle. So, after we registered a device to the cloud server,
+we will register it to its vehicle as well.
+To perform this step you will need `User-admin-access-token`
+
+[source]
+----
+Endpoint: PUT https://{{host}}/api/obd2devices/{{obd2_device_Id}}/vehicle/{{vehicle_id}}
+Authorization: Bearer {Admin-user-access-token}
+Header:
+- Accept: application/json
+Response:
+{
+    "id": "78dbcba8-ac33-11e8-b6d3-0242ac12000e", <1>
+    "family": "iWave",
+    "kernel": "1.0",
+    "macAddress": "E0-D5-5E-0D-CB-5B",
+    "vehicleId": "155898b6-ac32-11e8-bda8-0242ac12000d" <2>
+}
+// These data above is just an example
+----
+
+<1> Obd-II device's id
+<2> Id of the vehicle that this device is attached to
+
+=== 3. Get OBD-II Device Access Token
+
+In This step, you will use the `client id` of an Obd-II device (if it is a new device, you can get it in step 1 or
+check the database for client id of an existed device. For embedded team, the cloud team will provide you this
+information) to get its `access token`. You don't need any authorization for this step
+
+[source]
+----
+Endpoint: POST https://{host]/uaa/oauth/token
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request form data:
+    client_id: “”
+    grant_type: “client_credentials”
+Response:
+{
+    access_token: "xxxx", <1>
+    token_type: "xxxx",
+    expires_in: xxxx, <2>
+    scope: "xxxx"
+}
+----
+
+<1> The `access token` of an Obd-II device
+<2> After this period of time, the token will be expired
+
+=== 4. Send Data From OBD-II Device to Cloud Server
+
+After you get the `access token` in step 3, you will use it as a header to send data to cloud server.
+Right now the Cloud server is supporting 2 kinds of data format sent from the vehicle, `Json` and `Protobuf`.
+Although there are two difference formats but they will have the same pattern.
+The data you need to send will be putted in the body of the request, follow these pattern:
+
+For `Json` format:
+[source]
+----
+Endpoint: POST https://{host}/api/obd2devices/events
+Header:
+- Authorization: Bearer {Obd_II_access_token} <1>
+- Content-Type: application/json
+- Accept: application/json
+Request Body:
+{ <2>
+    "data": [
+        {
+            "timestamp": xxxx,
+            "speed": xxxx,
+            "fuel": xxxx,
+            "availableDrivingDistance": xxxx,
+            "engineCoolant": xxxx,
+            "rpm": xxxx,
+            "odometer": xxxx,
+            "tripOdometer": xxxx,
+            "gearShift": "xxxx",
+            "gps": {
+                "longitude": xxxx,
+                "latitude": xxxx
+            },
+            "brakingDistance": xxxx,
+            "mpg": xxxx,
+            "mil": [
+                {
+                    "type": "xxxx",
+                    "criticalLevel": "xxxx",
+                    "content": "xxxx"
+                },
+                {
+                    "type": "xxxx",
+                    "criticalLevel": "xxxx",
+                    "content": "xxxx"
+                },
+                ...
+            ]
+        },
+        ....
+    ]
+}
+----
+
+<1> The `access token` of an Obd-II device that you get from `step 3`.
+<2> The data you sent from the device, this must be sent as `Json` format.
+
+For `Protobuf` format:
+[source]
+----
+Endpoint: POST https://{host}/api/obd2devices/events
+Header:
+- Authorization: Bearer {Obd_II_access_token} <1>
+- Content-Type: application/x-protobuf
+- Accept: application/json
+Request Body:
+{ <2>
+    "data": [
+        {
+            "timestamp": xxxx,
+            "speed": xxxx,
+            "fuel": xxxx,
+            "availableDrivingDistance": xxxx,
+            "engineCoolant": xxxx,
+            "rpm": xxxx,
+            "odometer": xxxx,
+            "tripOdometer": xxxx,
+            "gearShift": "xxxx",
+            "gps": {
+                "longitude": xxxx,
+                "latitude": xxxx
+            },
+            "brakingDistance": xxxx,
+            "mpg": xxxx,
+            "mil": [
+                {
+                    "type": "xxxx",
+                    "criticalLevel": "xxxx",
+                    "content": "xxxx"
+                },
+                {
+                    "type": "xxxx",
+                    "criticalLevel": "xxxx",
+                    "content": "xxxx"
+                },
+                ...
+            ]
+        },
+        ....
+    ]
+}
+----
+
+<1> The `access token` of an Obd-II device that you get from `step 3`.
+<2> The data you sent from the device, this must be sent as `Protobuf`. The pattern here is just an example
+    in readable JSon format

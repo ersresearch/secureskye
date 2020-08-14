@@ -1,0 +1,96 @@
+= SecureSKYE
+Dominik Nakamura <dominik.nakamura@trilliumsecure.com>
+v0.5.0.M1, 2018/03/12
+:toc:
+:homepage: https://trilliumsecure.com
+:icons: font
+
+== System requirements
+
+The following requirements apply for a local installation on one machine.
+
+.Hardware
+|===
+|Component |Requirement
+
+|RAM
+|16 GB
+
+|===
+
+.Software
+|===
+|Name |Version
+
+|Linux OS
+|Ubuntu 16.04 LTS or equivalent
+
+|Docker
+|17.09
+
+|Java Runtime Environment
+|8
+
+|===
+
+[TIP]
+====
+The Java Runtime Environment is only required if you *don't* use docker for
+starting the services.
+====
+
+== Content
+
+The content of this release contains the following folders, separated by
+specific purposes.
+
+=== Docker images
+
+Pre-built docker images that can be pull from official Docker Hub (base images) and Trillium docker repository (SecureSkye service images) into docker for execution in
+containers. The containers be pull automatically when start up service or explicitly via the following command:
+
+.Command
+[source,sh]
+----
+docker-compose pull --parallel
+----
+
+=== Docker start up
+
+Docker compositions that can be run to ease the setup of the full services. To
+start the services, first import all Docker images. Then open a terminal at the
+location of the `docker-compose.yml` and run the following command:
+
+.Command
+[source,sh]
+----
+docker-compose up -d
+----
+
+== Services
+
+SecureSKYE consists of several services that interact with each other. After
+starting all containers, there should be the following services running: <<README.adoc#server-components,SecureSkye server components>>
+
+
+
+
+== Basic startup
+
+Below you can find a script to startup all services contained in this release.
+Please make sure you fulfill the system requirements before executing these
+commands.
+
+.Commands
+[source,sh]
+----
+# Pull docker images
+cd compose/spring-backend
+docker-compose pull --parallel
+
+# Start up services
+docker-compose up -d
+----
+
+After the startup you can open the server in any browser at
+*https://localhost*.

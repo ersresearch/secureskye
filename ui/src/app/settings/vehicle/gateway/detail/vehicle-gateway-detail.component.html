@@ -1,0 +1,57 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div *ngIf="gatewayInfo" class="card-body">
+          <h3 class="card-title mb-0">Gateway
+            <small class="text-muted small text-uppercase">{{gatewayInfo.id}}</small>
+          </h3>
+          <hr>
+
+          <div class="card">
+            <div class="card-header">Interface Infomation</div>
+            <div class="card-body">
+              <div class="form-group row">
+                <label for="interfaceIp" class="col-sm-2 col-form-label">Interface IP</label>
+                <div class="col-sm-10">
+                  <span class="form-control-plaintext">{{gatewayInfo.gatewayInterfaceInfo.ip}}</span>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="ecuId" class="col-sm-2 col-form-label">ECU ID</label>
+                <div class="col-sm-10">
+                  <span class="form-control-plaintext">{{gatewayInfo.interfaceInfo.ecuId}}</span>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Connected Vehicle</label>
+                <div class="col-sm-10">
+                  <a *ngIf="connectedVehicle" class="form-control-plaintext" [routerLink]="['/vehicle', connectedVehicle.id]">{{connectedVehicle.name}}</a>
+                  <span *ngIf="!connectedVehicle" class="form-control-plaintext text-muted">n/a</span>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="vinNumber" class="col-sm-2 col-form-label">VIN number</label>
+                <div class="col-sm-10">
+                  <span class="form-control-plaintext">{{gatewayInfo.gatewayInterfaceInfo.vin}}</span>
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="commProtocol" class="col-sm-2 col-form-label">Communication Protocol</label>
+                <div class="col-sm-10">
+                  <span class="form-control-plaintext">{{gatewayCommProtocol[gatewayInfo.interfaceInfo.commProtocol]}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">Error Code</div>
+            <div class="card-body">
+              <app-error-code #errorCodeForm [errorCode]="gatewayInfo.errorCode" [readonly]="true"></app-error-code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

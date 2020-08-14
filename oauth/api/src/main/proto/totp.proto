@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package totp;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.oauth.model";
+option java_outer_classname = "Proto";
+
+// OAuth TOTP
+message OauthTotpProto {
+    string oauth_id = 1; // OAuth ID of TOTP (username in password grant or clientId in client_credentials grant)
+    string oauth_group = 2; // OAuth group
+    string secret = 3; // Secret key
+    int32 recovery_code1 = 4; // Recovery code 1
+    int32 recovery_code2 = 5; // Recovery code 1
+    int32 recovery_code3 = 6; // Recovery code 1
+    int32 recovery_code4 = 7; // Recovery code 1
+    int32 recovery_code5 = 8; // Recovery code 1
+    bool enabled = 9; // enabled / disabled
+    string otp_auth_uri = 10; // OTP Authenticate URI for QR Code generation
+}
+
+// OAuth TOTP list
+message OauthTotpListProto {
+    repeated OauthTotpProto data = 1; // List of OAuth TOTP
+}
+
+// 2FA status enum
+enum TwoFactorAuthenticationStatusProto {
+    DISABLED = 0;
+    ENABLED = 1;
+    PENDING = 2;
+}

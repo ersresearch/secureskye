@@ -1,0 +1,174 @@
+= Contributing
+Dominik Nakamura <dominik.nakamura@trilliumsecure.com>
+v0.5.0.M1, 2018/03/12
+:toc:
+:homepage: https://trilliumsecure.com
+:icons: font
+
+== Committing
+
+=== Workflow
+
+The way from committing to the final merge requests consists of several steps.
+
+. Create a feature branch with the naming scheme `feature/xxx`, xxx being a very short name of your feature
+. Commit your changes
+- This can be just one commit or several
+- Give meaningful commit messages
+. If you think the feature is finished:
+.. Do an interactive rebase and skip or squash unnecessary commits to clean up your history
+.. Push your branch to the remote server. From here on your are not allowed to do any rebase (or other history rewriting
+commands) unless explicitly told to do so
+- In case you work with more than one person on that feature you may need to push it before the feature is considered
+finished. Still rebase your branch if reasonable, before you initially push it. After the push you are not allowed to
+rewrite history
+. Create a merge request for your branch on GitLab
+.. Select an assignee and a milestone if related to one
+.. Reference any related issues in the description with `#x`, x being your issue number
+- Use `Closes #x`, `fix #x` or https://docs.gitlab.com/ee/user/project/issues/automatic_issue_closing.html[other]
+phrases if you automatically want to close the issue when the merge request gets merged
+. Wait for your merge request to be reviewed and eventually merged
+- Watch for discussions in your merge request
+- In case some changes are required, commit them to the existing feature branch and GitLab will add them to the merge
+request automatically
+
+.Example
+[source,bash]
+----
+git checkout -b feature/xxx <1>
+git add . <2>
+git commit -m "Add ..." <2>
+git add . <3>
+git commit -m "Change ..." <3>
+git rebase -i develop <4>
+git push -u origin feature/xxx <5>
+----
+<1> Create a new branch and check it out
+<2> Make some changes and commit them
+<3> Maybe do some more changes and commit them as well
+<4> Do an interactive rebase onto develop and clean up your commits in the process
+<5> Push your branch to the remote server
+
+=== Merging the develop branch
+
+It is good to keep your feature branch in sync with the develop branch by merging from develop regularly. This makes
+the process easier for the person who is merging your request. Especially for long lived feature branches this is
+important.
+
+In some cases though, it is not the best decision to merge, as it can pollute the history. Take the following hints into
+account when merging.
+
+- If the changes in your branch and in develop are not related, you are usually not required to merge from develop at
+all. For example: Your changes are only in the frontend and latest changes in develop only relate to the backend.
+- Don't merge too often. If you merge for every 1 or 2 commits that come up in develop, you pollute the history with
+lots of (probably unnecessary) merge commits.
+
+=== Rebasing
+
+Rebasing, especially interactive rebasing is an important part when working in feature branches, as mentioned above. The
+easiest way to do a rebase is through the JetBrains IDEs (IntelliJ IDEA, PyCharm, WebStorm, ...).
+
+Select `VCS -> Git -> Rebase...` and select the branch you want to rebase onto. Make sure `Interactive` is checked. In
+the following it will ask you what to do with each commit. The most important one's are:
+
+- pick - Apply the commit, not making any changes
+- skip - Delete the whole commit
+- squash - Merge the commit into the previous resulting in one commit with the changes of both
+
+After the selection the IDE will try to merge any changes automatically but may ask you for manual merges several times
+during the process.
+
+The process can also be done on the command line, where it is exactly the same, but with CLI tools like vim instead of
+GUIs. For further details refer to the https://git-scm.com/docs/git-rebase[Git Reference Manual].
+
+
+=== Git Flow
+
+For the branching model Git Flow is used. To get a good understanding of how it works, see this
+http://danielkummer.github.io/git-flow-cheatsheet/[Cheatsheet].
+
+==== Features and Bugfixes
+
+Whenever you develop a new feature and need to fix a bug, this has to be done in a separate branch with the prefix
+`feature/`. For example `feature/new-file` or `feature/fix-error`. Once your feature is finished you push it to the
+remote server and create a **Merge Request** in GitLab.
+
+You never commit to the `develop` or `master` branch directly, always through a feature branch followed by a merge
+request.
+
+==== Releases
+
+When the develop branch is considered ready for the release, a special release branch (for example `release/1.0.0`) will
+be created by one of the Trillium engineers. From that point on, no new features will be included in the release.
+
+Only bug fixes and smaller changes like version name updates or documentation are allowed to be done. These changes
+get directly commited on the new `release` branch, no extra branch or merge request required. Also, all test should be
+done with the version from this branch.
+
+You can still continue working on your feature in your separate `feature` branch, as it doesn't affect the release
+version.
+
+Once everything is ready, a Trillium engineer will the `release` branch into `master`, then tag it and also merge into
+`develop` as well as delete the `release` branch. After that the release tag can be used to build all binaries for
+distribution.
+
+== Dependency ordering
+
+The dependencies defined in the `build.gradle` file of each module have to be ordered as follows:
+
+. Grouped by category in the following order
+.. Project module dependencies
+.. Kotlin
+... First `kotlin-stdlib-jre8`
+... Second `kotlin-reflect` (if it is a Spring module or otherwise required)
+... No further sorting rules apply to this category and it only consists of this two entries
+.. Spring _X_, grouped by module _X_ (for example Boot, Cloud, Security, ...) in alphabetical order
+.. Normal dependencies, managed by the Spring plugin (meaning no version number required, as it is auto-resolved by the plugin)
+.. Normal dependencies with version number
+.. Test dependencies
+.. Annotation Processor (`kapt`) dependencies
+. Ordered by configuration
+.. api
+.. (test) implementation
+.. (test) runtimeOnly
+. Ordered alphabetically
+
+
+.Example
+[source,groovy]
+----
+dependencies {
+    implementation project(':api')
+
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-undertow'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    runtimeOnly 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Spring Cloud
+    implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
+
+    // Spring Security
+    implementation "org.springframework.security.oauth:spring-security-oauth2:$springOauthVersion"
+
+    // Normal dependencies (SPring auto-versioned)
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // Normal dependencies
+    implementation "com.squareup.retrofit2:converter-jackson:$retrofitVersion"
+    implementation "org.mapstruct:mapstruct-jdk8:$mapstructVersion"
+    runtimeOnly "org.bouncycastle:bcprov-jdk15on:$bouncyCastleVersion"
+
+    // Test dependencies
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+    // Annotation Processor dependencies
+    kapt "org.mapstruct:mapstruct-processor:$mapstructVersion"
+}
+----
+

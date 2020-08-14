@@ -1,0 +1,61 @@
+<div class="animated fadeIn">
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6 col-lg-5">
+          <div class="controls mb-1">
+            <div class="input-group">
+              <span class="input-group-prepend">
+                <button class="btn btn-primary text-upcase" type="button" (click)="trackingStart()">
+                  <i class="fa fa-dot-circle-o"></i>&nbsp; Start Tracking</button>
+              </span>
+              <input [(ngModel)]="routeName" id="appendedInputButtons" size="16" class="form-control" type="text" placeholder="Route Name">
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th class="route-duration">Duration</th>
+                  <th class="route-time">Time</th>
+                  <th class="text-center route-toggle">
+                    <i class="fa fa-eye fa-lg"></i>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of routesData | slice : (routeListPageNo-1)*itemsPerPage : routeListPageNo*itemsPerPage" (click)="viewDetail(item)">
+                  <td>{{item.proto.route.name}}</td>
+                  <td>
+                    <span *ngIf="item.tracking" class="badge badge-success">ON GOING</span>
+                    <span *ngIf="!item.tracking">{{item.duration.humanize()}}</span>
+                  </td>
+                  <td>{{item.time}}</td>
+                  <td class="text-center">
+                    <button *ngIf="item.tracking" type="button" class="btn btn-sm btn-danger" (click)="trackingStop(item); $event.stopPropagation();">Finish</button>
+                    <label *ngIf="!item.tracking" class="switch switch-pill" [ngClass]="item.switchClass" (click)="$event.stopPropagation();">
+                      <input class="switch-input" [(ngModel)]="item.checked" (ngModelChange)="routeToggle(item)" type="checkbox">
+                      <span class="switch-slider"></span>
+                    </label>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <pagination *ngIf="routesData" [totalItems]="routesData.length" [(ngModel)]="routeListPageNo" [maxSize]="6" [itemsPerPage]="itemsPerPage"></pagination>
+        </div>
+        <div class="col-md-6 col-lg-7">
+          <agm-map [latitude]="gMapLatitude" [longitude]="gMapLongitude" style="height: 410px" [zoom]="13" [usePanning]="true">
+            <agm-marker [latitude]="gpsLatitude" [longitude]="gpsLongitude"></agm-marker>
+            <agm-polyline [visible]="true" *ngFor="let route of routeList;let i = index;" [strokeWeight]="3" [strokeColor]="route.color"
+              [geodesic]="true">
+              <agm-polyline-point *ngFor="let coordinate of route.points; let i=index" [latitude]="coordinate.latitude" [longitude]="coordinate.longitude">
+              </agm-polyline-point>
+            </agm-polyline>
+          </agm-map>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

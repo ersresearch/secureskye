@@ -1,0 +1,73 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <form #gatewayDetailForm="ngForm" *ngIf="gatewayInfo">
+          <div class="card-body">
+            <h3 class="card-title mb-0" *ngIf="gatewayInfo.id">Gateway
+              <small class="text-muted small text-uppercase">{{gatewayInfo.id}}</small>
+            </h3>
+            <h3 class="card-title mb-0" *ngIf="!gatewayInfo.id">Gateway Register
+            </h3>
+            <hr>
+
+            <div class="card">
+              <div class="card-header">Interface Infomation</div>
+              <div class="card-body">
+                <div class="form-group row">
+                  <label for="interfaceIp" class="col-sm-2 col-form-label">Interface IP</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="interfaceIp" name="interfaceIp" class="form-control" [(ngModel)]="gatewayInfo.gatewayInterfaceInfo.ip"
+                      #interfaceIp="ngModel" [ngClass]="fieldValidationClass(interfaceIp)">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="ecuId" class="col-sm-2 col-form-label">ECU ID</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="ecuId" name="ecuId" class="form-control" [(ngModel)]="gatewayInfo.interfaceInfo.ecuId"
+                      #ecuId="ngModel" [ngClass]="fieldValidationClass(ecuId)">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="ecuId" class="col-sm-2 col-form-label">Connected Vehicle</label>
+                  <div class="col-sm-10">
+                    <ng-select [items]="vehicleList" bindValue="value" [(ngModel)]="gatewayInfo.interfaceInfo.vehicleId"
+                      [clearable]="false" #vehicleId="ngModel" name="vehicleId">
+                    </ng-select>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="vinNumber" class="col-sm-2 col-form-label">VIN number</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="vinNumber" name="vinNumber" class="form-control" [(ngModel)]="gatewayInfo.gatewayInterfaceInfo.vin"
+                      #vinNumber="ngModel" [ngClass]="fieldValidationClass(vinNumber)">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="commProtocol" class="col-sm-2 col-form-label">Communication Protocol</label>
+                  <div class="col-sm-10">
+                    <ng-select [items]="gatewayCommProtocols" bindValue="value" [(ngModel)]="gatewayInfo.interfaceInfo.commProtocol"
+                      [clearable]="false" #commProtocol="ngModel" name="commProtocol">
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">Error Code</div>
+              <div class="card-body">
+                <app-error-code #errorCodeForm [newCodeInfoList]="newCodeInfoList" [errorCode]="gatewayInfo.errorCode"></app-error-code>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer" *ngIf="gatewayDetailForm">
+            <button type="button" class="btn btn-success group-fix" *ngIf="!gatewayInfo.id" (click)="registerGateway()">Register</button>
+            <button type="button" class="btn btn-success group-fix" *ngIf="gatewayInfo.id" (click)="updateGateway()">Update</button>
+            <button type="button" class="btn btn-danger group-fix" *ngIf="gatewayInfo.id" (click)="showConfirmDialog()">Remove</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package notification;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.notification.main.api.proto";
+option java_outer_classname = "Proto";
+
+message NotificationProto {
+    string recipient = 1;
+    string subject = 2;
+    string message = 3;
+    ChannelTypeProto channel = 4;
+}
+
+message SubscriptionProto {
+    UserProto user = 1;
+    TopicProto topic = 2;
+    ChannelProto channel = 3;
+}
+
+message SubscriptionListProto {
+    repeated SubscriptionProto subscriptions = 1;
+}
+
+message UserProto {
+    string id = 1; // Identifier of the user
+    string name = 2; // User name
+    string first_name = 3; // First name
+    string last_name = 4; // Last name
+    string email = 5; // Email of user
+}
+
+message TopicProto {
+    string id = 1;
+    string name = 2;
+    string description = 3;
+    string subject_prefix = 4;
+}
+
+message TopicListProto {
+    repeated TopicProto topics = 1;
+}
+
+message ChannelProto {
+    string id = 1;
+    ChannelTypeProto type = 2;
+    string name = 3;
+    string description = 4;
+}
+
+message ChannelListProto {
+    repeated ChannelProto channels = 1;
+}
+
+enum ChannelTypeProto {
+    DEFAULT = 0;
+    EMAIL = 1;
+}

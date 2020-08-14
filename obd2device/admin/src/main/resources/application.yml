@@ -1,0 +1,83 @@
+#
+# Copyright (C) 2017-2018 Trillium Inc. <support@trilliumsecure.com>
+#
+
+spring:
+  datasource:
+    url: jdbc:postgresql://192.168.10.220:5432/secureskye
+    username: postgres
+    password: postgres
+  cloud:
+    consul:
+      host: 192.168.10.220
+      discovery:
+        instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+        health-check-path: /actuator/health
+        tags:
+          - >-
+            traefik.frontend.rule=
+            Path:
+            /api/obd2devices,
+            /api/obd2devices/{id},
+            /api/obd2devices/{id}/vehicle,
+            /api/obd2devices/{id}/vehicle/{vehicleId},
+            /api/vehicles/{vehicleId}/obd2device
+          - traefik.frontend.priority=10
+
+security:
+  oauth2:
+    secureskye:
+      client:
+        access-token-uri: http://saa/saa/oauth/token
+        client-id: secureskye-obd2device-admin-service
+        client-secret: secureskye-service
+        scope: none
+        added-info: jwt
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,prometheus
+
+---
+spring:
+  profiles: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/secureskye
+  cloud:
+    consul:
+      host: localhost
+server:
+  port: 11110
+
+---
+spring:
+  profiles: debug
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+---
+spring:
+  profiles: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/secureskye
+  cloud:
+    consul:
+      host: discovery
+      discovery:
+          instance-id: ${spring.application.name}:${HOSTNAME}
+          prefer-ip-address: true
+
+server:
+  undertow:
+    accesslog:
+      enabled: true
+      dir: /var/log
+
+logging:
+  path: /var/log
+  level:
+    root: WARN
+    jp.co.trillium.*: INFO

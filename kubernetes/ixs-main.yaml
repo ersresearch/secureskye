@@ -1,0 +1,25 @@
+apiVersion: apps/v1beta1 # for versions before 1.8.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: ixs-main
+spec:
+  selector:
+    matchLabels:
+      app: ixs-main
+      tier: frontend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ixs-main
+        tier: frontend
+    spec:
+      containers:
+      - name: ixs-main
+        image: asia.gcr.io/secure-skye/ixs-main:0.4.0.RELEASE
+        resources:
+          requests:
+#            cpu: 1
+#            memory: 1Gi
+        ports:
+        - containerPort: 8080

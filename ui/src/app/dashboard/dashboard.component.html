@@ -1,0 +1,60 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div *ngIf="vehicleCount!==undefined" class="col-sm-6 col-lg-3" id="vehicleCountCard" (click)="router.navigate(['/vehicle'])">
+      <div class="card text-white bg-primary hover-zoom-effect ptr-cursor">
+        <div class="card-body">
+          <div class="h1 text-muted text-right mb-0">
+            <i class="fa fa-lg fa-car"></i>
+          </div>
+          <div class="h4 mb-0" id="vehicleCount">{{vehicleCount | number}}</div>
+          <small class="text-muted text-uppercase font-weight-bold">Registered Vehicles</small>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="vehicleModelCount!==undefined" class="col-sm-6 col-lg-3" id="vehicleModelCountCard" (click)="router.navigate(['/settings/vehicle/model'])">
+      <div class="card text-white bg-info hover-zoom-effect ptr-cursor">
+        <div class="card-body">
+          <div class="h1 text-muted text-right mb-0">
+            <i class="fa fa-lg fa-cubes"></i>
+          </div>
+          <div class="h4 mb-0" id="vehicleModelCount">{{vehicleModelCount | number}}</div>
+          <small class="text-muted text-uppercase font-weight-bold">Supported Models</small>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="userCount!==undefined" class="col-sm-6 col-lg-3" id="userCountCard" (click)="router.navigate(['/settings/user'])">
+      <div class="card text-white bg-warning hover-zoom-effect ptr-cursor">
+        <div class="card-body">
+          <div class="h1 text-muted text-right mb-0">
+            <i class="fa fa-lg fa-users"></i>
+          </div>
+          <div class="h4 mb-0" id="userCount">{{userCount | number}}</div>
+          <small class="text-muted text-uppercase font-weight-bold">Users</small>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="imageArchiveCount!==undefined" class="col-sm-6 col-lg-3" id="imageArchiveCountCard" (click)="router.navigate(['/ota'])">
+      <div class="card text-white bg-danger hover-zoom-effect ptr-cursor">
+        <div class="card-body">
+          <div class="h1 text-muted text-right mb-0">
+            <i class="fa fa-lg fa-archive"></i>
+          </div>
+          <div class="h4 mb-0" id="imageArchiveCount">{{imageArchiveCount | number}}</div>
+          <small class="text-muted text-uppercase font-weight-bold">OTA Archives</small>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="jumbotron" *ngIf="empty">
+    <h1 class="display-4">Welcome!</h1>
+    <p class="lead">Either there's nothing going on or you don't have sufficient privileges to see them.</p>
+    <hr class="my-4">
+    <p>Please try login with different credentials or contact
+      <a href="mailto:support@trilliumsecure.com">support</a>.
+    </p>
+    <p class="lead">
+      <a class="btn btn-primary btn-lg" [routerLink]="['/login']" [queryParams]="{logout:true}">
+        <i class="fa fa-sign-out"></i> Logout</a>
+    </p>
+  </div>
+</div>

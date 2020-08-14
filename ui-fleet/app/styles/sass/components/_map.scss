@@ -1,0 +1,19 @@
+.mapContainer {
+  position: relative;
+  height: 100%;
+  border: 1px solid #F2F2F2;
+  border-radius: 8px;
+  .mapboxgl-map {
+    opacity: 0.8;
+    height: 100%;
+    width: 100%;
+    .mapboxgl-control-container {
+      display: none;
+    }
+    canvas {
+      border-radius: 8px;
+      height: 100% !important;
+      width: 100% !important;
+    }
+  }
+}

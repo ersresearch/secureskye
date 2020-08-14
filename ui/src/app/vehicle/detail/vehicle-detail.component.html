@@ -1,0 +1,68 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title mb-0" *ngIf="vehicleId">Vehicle
+            <small class="text-muted small text-uppercase">{{vehicleId}}</small>
+          </h3>
+          <h3 class="card-title mb-0" *ngIf="!vehicleId">Vehicle Register
+          </h3>
+          <hr>
+          <div class="row justify-content-sm-center">
+            <div class="col-md-10">
+              <div *ngIf="vehicleForm" [formGroup]="vehicleForm">
+                <div class="form-group row">
+                  <label for="vehicle-name" class="col-9 col-sm-5 col-md-4 col-form-label">Name</label>
+                  <div class="col-3 col-sm-7 col-md-8">
+                    <input type="text" formControlName="vehicleName" class="form-control" id="vehicle-name" [ngClass]="fieldValidationClass('vehicleName')">
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('vehicleName', 'required')">Name
+                      required!</div>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="vehicle-model" class="col-9 col-sm-5 col-md-4 col-form-label">Model</label>
+                  <div *ngIf="vehicle" class="col-3 col-sm-7 col-md-8">
+                    <div class="form-control-plaintext">{{vehicle.modelName}}</div>
+                  </div>
+                  <div *ngIf="!vehicle" class="col-3 col-sm-7 col-md-8">
+                    <ng-select *ngIf="vehicleModelList" [items]="vehicleModelList.model" bindValue="id" bindLabel="name" formControlName="vehicleModel"
+                      [clearable]="false" name="commProtocol" id="vehicle-model" [ngClass]="fieldValidationClass('vehicleModel')">
+                    </ng-select>
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('vehicleModel', 'required')">Model
+                      required!</div>
+                  </div>
+                </div>
+                <div class="form-group row" *ngIf="vehicle">
+                  <label class="col-9 col-sm-5 col-md-4 col-form-label">2-Factor Authentication
+                    <span class="form-text" *ngIf="vehicle.tfa == 1">
+                      <button type="button" class="btn btn-link" (click)="reset2Fa(); false;">Reset</button>
+                    </span>
+                    <span class="badge badge-warning text-uppercase" *ngIf="vehicle.tfa == 2">VERIFICATION PENDING</span>
+                  </label>
+                  <div class="col-3 col-sm-7 col-md-8">
+                    <div class="form-control-plaintext">
+                      <label class="switch switch-pill mb-0 float-right float-sm-left" [class.switch-success]="vehicle.tfa == 1"
+                        [class.disabled]="tfaProcessing" (click)="switch2FactorAuthentication(); false;">
+                        <input class="switch-input" [checked]="vehicle.tfa == 1 || vehicle.tfa == 2" type="checkbox">
+                        <span class="switch-slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-12">
+              <button type="button" class="btn btn-success group-fix" *ngIf="!vehicleId" (click)="registerVehicle()">Register</button>
+              <button type="button" class="btn btn-success group-fix" *ngIf="vehicleId" (click)="saveVehicleName()">Update</button>
+              <button type="button" class="btn btn-danger group-fix" *ngIf="vehicleId" (click)="showConfirmDialog()">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<app-otp-dialog #otpDialog></app-otp-dialog>

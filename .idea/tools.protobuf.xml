@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProtobufSettings">
+    <option name="includePaths">
+      <list>
+        <option value="$PROJECT_DIR$/ixs/main/api/src/main/proto" />
+        <option value="$PROJECT_DIR$/licensing/main/api/src/main/proto" />
+        <option value="$PROJECT_DIR$/notification/main/src/main/proto" />
+        <option value="$PROJECT_DIR$/oauth/api/src/main/proto" />
+        <option value="$PROJECT_DIR$/ota/vehicle/api/src/main/proto" />
+        <option value="$PROJECT_DIR$/user/admin/api/src/main/proto" />
+        <option value="$PROJECT_DIR$/vehicle/admin/api/src/main/proto" />
+        <option value="$PROJECT_DIR$/vehicle/message/api/src/main/proto" />
+        <option value="$PROJECT_DIR$/vehicle/registry/api/src/main/proto" />
+      </list>
+    </option>
+  </component>
+</project>

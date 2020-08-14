@@ -1,0 +1,68 @@
+<form #errorCodeForm="ngForm" *ngIf="errorCode">
+  <div class="form-group row">
+    <label for="ipsVersion" class="col-sm-2 col-form-label">IPS Version</label>
+    <div class="col-sm-10">
+      <input type="text" id="ipsVersion" name="ipsVersion" [class.form-control]="!readonly" [class.form-control-plaintext]="readonly"
+        [(ngModel)]="errorCode.ipsVersion" #ipsVersion="ngModel" [ngClass]="fieldValidationClass(ipsVersion)" [readOnly]="readonly">
+      <div class="invalid-feedback" *ngIf="ipsVersion.errors&&ipsVersion.errors.required">IPS Version required!</div>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="ruleDbStatus" class="col-sm-2 col-form-label">Rule DB Status</label>
+    <div class="col-sm-10">
+      <input type="number" id="ruleDbStatus" name="ruleDbStatus" [class.form-control]="!readonly" [class.form-control-plaintext]="readonly"
+        [(ngModel)]="errorCode.ruleDbStatus" #ruleDbStatus="ngModel" [ngClass]="fieldValidationClass(ruleDbStatus)" [readOnly]="readonly">
+      <div class="invalid-feedback" *ngIf="ruleDbStatus.errors&&ruleDbStatus.errors.required">Rule DB Status required!</div>
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="errorCount" class="col-sm-2 col-form-label">Error Count</label>
+    <div class="col-sm-10">
+      <input type="number" id="errorCount" name="errorCount" [class.form-control]="!readonly" [class.form-control-plaintext]="readonly"
+        [(ngModel)]="errorCode.errorCount" #errorCount="ngModel" [ngClass]="fieldValidationClass(errorCount)" [readOnly]="readonly">
+      <div class="invalid-feedback" *ngIf="errorCount.errors&&errorCount.errors.required">Error Count required!</div>
+    </div>
+  </div>
+
+  <!-- Show code info list -->
+  <div class="form-group row">
+    <label for="codeInfo" class="col-sm-2 col-form-label">Code Infomation</label>
+    <div class="col-sm-10" id="codeInfo">
+      <!-- Table to show code info list -->
+      <div class="table-responsive" *ngIf="errorCode.errorCodes">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Detail</th>
+              <th>Operation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Show exist code info -->
+            <tr *ngFor="let code of errorCode.errorCodes">
+              <td>{{code.code}}</td>
+              <td>{{code.detail}}</td>
+              <td></td>
+            </tr>
+            <!-- Show new code info -->
+            <tr *ngFor="let code of newCodeInfoList; let i = index">
+              <td>
+                <input type="number" class="form-control" [(ngModel)]="code.code" [ngModelOptions]="{standalone: true}">
+              </td>
+              <td>
+                <input type="text" class="form-control" [(ngModel)]="code.detail" [ngModelOptions]="{standalone: true}">
+              </td>
+              <td>
+                <button type="button" class="btn btn-warning" (click)="deleteNewCodeInfo(i)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- /Table-->
+      <button type="button" class="btn btn-success" (click)="addNewCodeInfo()" *ngIf="!readonly">Add new code</button>
+    </div>
+  </div>
+  <!-- /Show code info list -->
+</form>

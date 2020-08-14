@@ -1,0 +1,688 @@
+= Vehicle Api Information
+Phung Tan Sang <sangpt3@fsoft.com.vn>
+:toc:
+:homepage: http://trillium.co.jp
+:icons: font
+:source-highlighter: pygments
+
+== API Usage
+
+=== Authority List
+
+Authority list for vehicle:
+
+- vehicle:create
+
+- vehicle:read
+
+- vehicle:update
+
+- vehicle:delete
+
+- vehicle-model:create
+
+- vehicle-model:update
+
+- vehicle-model:read
+
+- vehicle-model:delete
+
+- vehicle-status:update
+
+=== API For Vehicle
+
+==== Create a vehicle
+
+Register a new vehicle with given information. The response will also give you back a vehicle-client-id for later use.
+To perform this step you will need this authority: `vehicle:create`.
+
+[source]
+----
+Endpoint: POST https://{host}/api/vehicles
+Authorization: Bearer {access-token}
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request Body:
+{<1>
+	"modelId": "xxxx", <2>
+	"name": "xxxx",
+	"vin": "xxxx",
+	"color": "xxxx"
+}
+Response:
+{ <3>
+    "vehicle": {
+        "id": "xxxx",
+        "modelId": "xxxx",
+        "modelName": "xxxx",
+        "name": "xxxx",
+        "makerId": "xxxx",
+        "makerName": "xxxx",
+        "bodyType": "xxxx",
+        "vin": "xxxx",
+        "color": "xxxx",
+        "imageUrl": "xxxx",
+        "connection": {
+            "id": "xxxx",
+            "connected": "xxxx",
+            "connectedTimestamp": "xxxx",
+            "disconnectedTimestamp": "xxxx",
+            "lastReceivingTimestamp": "xxxx",
+            "ipAddress": "xxxx",
+            "status": "xxxx"
+        },
+        "alertCount": {
+            "id": "xxxx",
+            "danger": "xxxx",
+            "warning": "xxxx",
+            "info": "xxxx"
+        }
+    },
+    "clientId": "vehicle-3498cf12-d02f-11e8-836f-0242ac17000b" <4>
+}
+----
+
+<1> Information of a Vehicle.
+<2> Vehicle model id.
+<3> Response from server after successful registered. Contain vehicle's information.
+<4> Vehicle client id for later use.
+
+==== Get All Vehicle
+
+List all vehicles in the database.
+To perform this step you will need this authority: `vehicle:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Response:
+{
+    "data": [
+        {
+            Vehicle-information-1
+        },
+        {
+            Vehicle-information-2
+        },
+        ....
+    ]
+}
+----
+
+==== Search Vehicle
+
+Search for a vehicle with custom parameters.
+
+Search pattern string format:
+
+[source]
+----
+vin=xxx,model=xxx,ip=xxx,[moving/stopped/unknown],[connected/disconnected]
+----
+
+To perform this step you will need this authority: `vehicle:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Request form data:
+    search: "xxxx",<1>
+Response:
+{
+    "data": [
+        {
+            "id": "xxxx",<2>
+            "modelId": "xxxx",
+            "modelName": "xxxx",
+            "name": "xxxx",
+            "makerId": "xxxx",
+            "makerName": "xxxx",
+            "bodyType": "xxxx",
+            "vin": "xxxx",
+            "color": "xxxx",
+            "imageUrl": "xxxx",
+            "connection": {
+                "id": "xxxx",
+                "connected": "xxxx",
+                "connectedTimestamp": "xxxx",
+                "disconnectedTimestamp": "xxxx",
+                "lastReceivingTimestamp": "xxxx",
+                "ipAddress": "xxxx",
+                "status": "xxxx"
+            },
+            "alertCount": {
+                "id": "xxxx",
+                "danger": "xxxx",
+                "warning": "xxxx",
+                "info": "xxxx"
+            }
+        }
+    ]
+}
+----
+
+<1> Search field, value in [vin, model, ip, moving, stopped, unknown, connected, disconnected]
+<2> Vehicle's id
+
+==== Get a vehicle
+
+Find a vehicle by its `Id` or `vehicle-client-Id`. If the given id is the `vehicle-client-id`, you will have to set the
+`clientId` param to `true`. By default it is `false` and if you're looking for a vehicle bi its id you don't need to put it in the request.
+To perform this step you will need this authority: `vehicle:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles/{vehicle_id}?clientId={true/false}
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Response:
+{
+    "id": "xxxx",
+    "modelId": "xxxx",
+    "modelName": "xxxx",
+    "name": "xxxx",
+    "makerId": "xxxx",
+    "makerName": "xxxx",
+    "bodyType": "xxxx",
+    "vin": "xxxx",
+    "color": "xxxx",
+    "imageUrl": "xxxx",
+    "connection": {
+        "id": "xxxx",
+        "connected": "xxxx",
+        "connectedTimestamp": "xxxx",
+        "disconnectedTimestamp": "xxxx",
+        "lastReceivingTimestamp": "xxxx",
+        "ipAddress": "xxxx",
+        "status": "xxxx"
+    },
+    "alertCount": {
+        "id": "xxxx",
+        "danger": "xxxx",
+        "warning": "xxxx",
+        "info": "xxxx"
+    }
+}
+----
+
+==== Rename a vehicle
+
+Rename a vehicle by its Id.
+To perform this step you will need this authority: `vehicle:update`.
+
+[source]
+----
+Endpoint: PUT https://{host}/api/vehicles/{vehicle_id}/rename?newName={xxxx}
+Authorization: Bearer {access-token}
+----
+
+==== Delete a vehicle
+
+Delete a vehicle by its Id.
+To perform this step you will need this authority: `vehicle:delete`.
+
+[source]
+----
+Endpoint: DELETE https://{host}/api/vehicles/{vehicle_id}
+Authorization: Bearer {access-token}
+----
+
+==== Get vehicle image
+
+Get vehicle's image by its Id.
+You don't need any authorization for this step.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles/{vehicle_id}/image
+Authorization: Bearer {access-token}
+Response: <the image>
+----
+
+==== Update vehicle image
+
+API update vehicle's image by its Id and new image.
+To perform this step you will need this authority: `vehicle:update`.
+
+[source]
+----
+Endpoint: PATCH https://{host}/api/vehicles/{vehicle_id}/image
+Authorization: Bearer {access-token}
+Header:
+- Content-Type: application/x-www-form-urlencoded
+Request form data:
+    file: <file-name.pgn>
+----
+
+==== Get vehicle display settings
+
+Get model's display settings for a vehicle by vehicle id.
+To perform this step you will need this authority: `vehicle:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles/{vehicle_id}/display-settings
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Response:
+{
+    "id": "xxxx",
+    "speed": "xxxx",
+    "fuel": "xxxx",
+    "temperature": "xxxx",
+    "rpm": "xxxx",
+    "tripOdometer": "xxxx",
+    "odometer": "xxxx",
+    "gear": "xxxx",
+    "route": "xxxx",
+    "ecuAlertNode": "xxxx",
+    "speedGraph": "xxxx",
+    "rpmGraph": "xxxx",
+    "brakingGraph": "xxxx",
+    "mpgGraph": "xxxx",
+    "milEngine": "xxxx",
+    "milTirePressure": "xxxx",
+    "milEngineOil": "xxxx",
+    "milBrakes": "xxxx",
+    "milEngineCoolant": "xxxx",
+    "milBattery": "xxxx"
+}
+----
+
+=== API For Vehicle Model
+
+==== Create a vehicle model
+
+Register a new vehicle model with given information. you also need `model-maker-id` from the database. At the moment
+there is no relevant api about `model-maker`, so you have to look it up in the database.
+To perform this step you will need this authority: `vehicle-model:create`.
+
+[source]
+----
+Endpoint: POST https://{host}/api/vehicles/models
+Authorization: Bearer {access-token}
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request Body:
+{
+	"name": "xxxx",
+	"maker": { // model's maker information
+		"id":"xxxx",
+		"name":"xxxx"
+	},
+	"body": "xxxx" // body type of the model.
+	               //List of [Custom, Hatchback, Sedan, MUV, SUV, Coupe, Convertible, Wagon, Van, Jeep]
+}
+Response:
+{
+    "id": "xxxx",
+    "name": "xxxx",
+    "maker": {
+        "id": "xxxx",
+        "name": "xxxx"
+    },
+    "body": "xxxx",
+    "displaySettings": {
+        <model's-display-settings>
+    }
+}
+----
+
+==== Update a vehicle model
+
+API update a vehicle model by its Id.
+To perform this step you will need this authority: `vehicle-model:update`.
+
+[source]
+----
+Endpoint: PUT https://{host}/api/vehicles/models/{model_id}
+Authorization: Bearer {access-token}
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request Body:
+{
+	"name": "xxxx",
+	"maker": {
+		"id":"xxxx",
+		"name":"xxxx"
+	},
+	"body": "xxxx"
+}
+Response:
+{
+    "id": "xxxx",
+    "name": "xxxx",
+    "maker": {
+        "id": "xxxx",
+        "name": "xxxx"
+    },
+    "body": "xxxx",
+    "displaySettings": {
+        <model's-display-settings>
+    }
+}
+----
+
+==== Update a vehicle model settings
+
+Update model's settings by `model_id `.
+To perform this step you will need this authority: `vehicle-model:update`.
+
+[source]
+----
+Endpoint: PUT https://{host}/api/vehicles/models/{model_id}/settings
+Authorization: Bearer {access-token}
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request Body:
+{
+    "speed": "xxxx",
+    "fuel": "xxxx",
+    "temperature": "xxxx",
+    "rpm": "xxxx",
+    "tripOdometer": "xxxx",
+    "odometer": "xxxx",
+    "gear": "xxxx",
+    "route": "xxxx",
+    "ecuAlertNode": "xxxx",
+    "speedGraph": "xxxx",
+    "rpmGraph": "xxxx",
+    "brakingGraph": "xxxx",
+    "mpgGraph": "xxxx",
+    "milEngine": "xxxx",
+    "milTirePressure": "xxxx",
+    "milEngineOil": "xxxx",
+    "milBrakes": "xxxx",
+    "milEngineCoolant": "xxxx",
+    "milBattery": "xxxx"
+}
+Response:
+{
+    "id": "xxxx",
+    "speed": "xxxx",
+    "fuel": "xxxx",
+    "temperature": "xxxx",
+    "rpm": "xxxx",
+    "tripOdometer": "xxxx",
+    "odometer": "xxxx",
+    "gear": "xxxx",
+    "route": "xxxx",
+    "ecuAlertNode": "xxxx",
+    "speedGraph": "xxxx",
+    "rpmGraph": "xxxx",
+    "brakingGraph": "xxxx",
+    "mpgGraph": "xxxx",
+    "milEngine": "xxxx",
+    "milTirePressure": "xxxx",
+    "milEngineOil": "xxxx",
+    "milBrakes": "xxxx",
+    "milEngineCoolant": "xxxx",
+    "milBattery": "xxxx"
+}
+----
+
+==== Get all vehicle model
+
+List all vehicle models in the database.
+To perform this step you will need this authority: `vehicle-model:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles/models
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Response:
+{
+    "model": [
+        {
+            "id": "xxxx",
+            "name": "xxxx",
+            "maker": {
+                "id": "xxxx",
+                "name": "xxxx"
+            },
+            "body": "xxxx",
+            "displaySettings": {
+                <model's-display-settings>
+            }
+        },
+        ...
+    ]
+}
+----
+
+==== Get  a vehicle model
+
+Find a vehicle model by its Id.
+To perform this step you will need this authority: `vehicle-model:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles/models/{model_id}
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Response:
+{
+    "id": "xxxx",
+    "name": "xxxx",
+    "maker": {
+        "id": "xxxx",
+        "name": "xxxx"
+    },
+    "body": "xxxx",
+    "displaySettings": {
+        <model's-display-settings>
+    }
+}
+----
+
+==== Delete vehicle model
+
+Delete a vehicle model by its Id
+To perform this step you will need this authority: `vehicle-model:delete`.
+
+[source]
+----
+Endpoint: DELETE https://{host}/api/vehicles/models/{model_id}
+Authorization: Bearer {access-token}
+----
+
+==== Get vehicle model settings
+
+Get model settings by `model_id`. Model's settings is a set of boolean values
+To perform this step you will need this authority: `vehicle-model:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles/models/{model_id}/settings
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Response:
+{
+    "id": "xxxx",
+    "speed": "xxxx",
+    "fuel": "xxxx",
+    "temperature": "xxxx",
+    "rpm": "xxxx",
+    "tripOdometer": "xxxx",
+    "odometer": "xxxx",
+    "gear": "xxxx",
+    "route": "xxxx",
+    "ecuAlertNode": "xxxx",
+    "speedGraph": "xxxx",
+    "rpmGraph": "xxxx",
+    "brakingGraph": "xxxx",
+    "mpgGraph": "xxxx",
+    "milEngine": "xxxx",
+    "milTirePressure": "xxxx",
+    "milEngineOil": "xxxx",
+    "milBrakes": "xxxx",
+    "milEngineCoolant": "xxxx",
+    "milBattery": "xxxx"
+}
+----
+
+=== API For Vehicle Statistics
+==== Get vehicle statistic
+
+Get vehicle statistic in the database.
+To perform this step you will need this authority: `vehicle:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles/statistics
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Response:
+{<1>
+    "vehicleCount": "xxxx",
+    "modelCount": "xxxx"
+}
+----
+
+==== Get vehicle statistic online
+
+Get statistic of online vehicle.
+To perform this step you will need this authority: `vehicle:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/vehicles/statistics/online
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Response:
+{<1>
+    "connectedCount": "xxxx",
+    "totalVehicle": "xxxx"
+}
+----
+
+=== Internal API For Vehicle Management
+
+==== Get a vehicle
+
+Internal API for find a vehicle by its Id.
+To perform this step you will need this authority: `vehicle:read`.
+
+[source]
+----
+Endpoint: GET https://{host}/api/internal/vehicles/{vehicle_id}
+Authorization: Bearer {access-token}
+Header:
+- Accept: application/json
+Response:
+{
+    "id": "xxxx",<1>
+    "modelId": "xxxx",
+    "modelName": "xxxx",
+    "name": "xxxx",
+    "makerId": "xxxx",
+    "makerName": "xxxx",
+    "bodyType": "xxxx",
+    "vin": "xxxx",
+    "color": "xxxx",
+    "imageUrl": "xxxx",
+    "connection": {
+        "id": "xxxx",
+        "connected": "xxxx",
+        "connectedTimestamp": "xxxx",
+        "disconnectedTimestamp": "xxxx",
+        "lastReceivingTimestamp": "xxxx",
+        "ipAddress": "xxxx",
+        "status": "xxxx"
+    },
+    "alertCount": {
+        "id": "xxxx",
+        "danger": "xxxx",
+        "warning": "xxxx",
+        "info": "xxxx"
+    }
+}
+----
+<1> Vehicle's id
+
+==== Update vehicle connection
+
+API update a vehicle connection by `vehicle_id`.
+To perform this step you will need this authority: `vehicle-status:update`.
+
+[source]
+----
+Endpoint: POST https://{host}/api/internal/vehicles/{vehicle_id}/connection
+Authorization: Bearer {access-token}
+Header:
+- Content-Type: application/json
+Request Body:
+{
+    "connected": "xxxx",
+    "connectedTimestamp": "xxxx",
+    "disconnectedTimestamp": "xxxx",
+    "status": "xxxx" // Enum value [UNKNOWN, STOPPED, MOVING]
+}
+----
+
+==== Update vehicle connection status
+
+API update a vehicle connection status by `vehicle_id`.
+To perform this step you will need this authority: `vehicle-status:update`.
+
+[source]
+----
+Endpoint: PUT https://{host}/api/internal/vehicles/{vehicle_id}/connection/{status}<1>
+Authorization: Bearer {access-token}
+
+----
+
+<1> Tracking status of vehicle, enum value: [UNKNOWN, STOPPED, MOVING]
+
+==== Update vehicle update count
+
+API update count for vehicle by `vehicle_id`.
+To perform this step you will need this authority: `vehicle-status:update`.
+
+[source]
+----
+Endpoint: POST https://{host}/api/internal/vehicles/{vehicle_id}/update-count
+Authorization: Bearer {access-token}
+Header:
+- Content-Type: application/x-www-form-urlencoded
+Request form data:
+    updateCount: xxxx,
+----
+
+==== Update vehicle alert count
+
+API update alert count for vehicle by `vehicle_id`.
+To perform this step you will need this authority: `vehicle-status:update`.
+
+[source]
+----
+Endpoint: PUT https://{host}/api/internal/vehicles/{vehicle_id}/alert-count
+Authorization: Bearer {access-token}
+Header:
+- Content-Type: application/json
+Request Body:
+{
+    "danger": xxxx,
+    "warning": xxxx,
+    "info": xxxx
+}
+----
+

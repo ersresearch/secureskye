@@ -1,0 +1,31 @@
+// html,
+// body,
+// .container-table {
+//   height: 100%;
+// }
+
+.server-error-page {
+  .number-404 {
+    font-size: 8em;
+    color: white;
+    text-align: center;
+  }
+  .content-404 {
+    font-size: 3em;
+    color: aliceblue;
+    text-align: center;
+  }
+}
+
+.container-table {
+  min-height: 100%;
+  min-height: 100vh;
+  display: table;
+  justify-content: center;
+  align-items: center;
+}
+
+.vertical-center-row {
+  display: table-cell;
+  vertical-align: middle;
+}

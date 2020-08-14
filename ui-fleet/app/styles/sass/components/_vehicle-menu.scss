@@ -1,0 +1,28 @@
+.rstcustom__rowContents {
+  min-width: auto;
+  background-color: transparent;
+  border: none;
+  box-shadow: 0 0px 0px 0px;
+  margin-left: 10px;
+  color: white;
+}
+.selected {
+  // background-color: red;
+}
+.rstcustom__lineChildren::after {
+  background-color: white;
+}
+.rst__lineHalfHorizontalRight::before, 
+.rst__lineFullVertical::after, 
+.rst__lineHalfVerticalTop::after, 
+.rst__lineHalfVerticalBottom::after {
+  position: absolute;
+  content: '';
+  background-color: white !important
+}
+// .rstcustom__rowContents {
+//   & :hover {
+//     color: white;
+//   }
+//   background-color: red;
+// }

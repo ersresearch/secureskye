@@ -1,0 +1,34 @@
+excludes:
+  - common/build
+  - common-api/build
+  - ie/main/api/build
+  - ixs/main/api/build
+  - licensing/main/api/build
+  - notification/main/api/build
+  - oauth/api/build
+  - obd2device/admin/api/build
+  - obd2device/event/api/build
+  - ota/vehicle/api/build
+  - ui/node_modules
+  - ui-fleet/node_modules
+  - user/admin/api/build
+  - vehicle/admin/api/build
+  - vehicle/message/api/build
+  - vehicle/registry/api/build
+  - websocket/client/api/build
+  - websocket/client/build
+
+protoc:
+  version: 3.6.1
+  includes:
+    - oauth/api/src/main/proto
+    - vehicle/message/api/src/main/proto
+
+lint:
+  rules:
+    remove:
+      - ENUM_FIELD_PREFIXES
+      - ENUM_ZERO_VALUES_INVALID
+      - FILE_OPTIONS_EQUAL_JAVA_OUTER_CLASSNAME_PROTO_SUFFIX
+      - FILE_OPTIONS_EQUAL_JAVA_PACKAGE_COM_PREFIX
+      - FILE_OPTIONS_REQUIRE_GO_PACKAGE

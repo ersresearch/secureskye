@@ -1,0 +1,15 @@
+#terminal-scroller {
+    height: 430px;
+    position: relative;
+}
+
+#terminal-emulator {
+    font-family: "Consolas", "Courier New", "monospace";
+    line-height: 1em;
+    background-color: #272822;
+}
+
+#terminal-header {
+    line-height: 1.2em;
+    color: #74aa04;
+}

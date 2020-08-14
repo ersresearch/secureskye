@@ -1,0 +1,2 @@
+# init.sh to have unix linefeed style (LF)
+init.sh text eol=lf

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package vehicle.message;
+
+import "event.proto";
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.vehicle.message.api.proto";
+option java_outer_classname = "RouteProto";
+
+// GPS route which defines a time range for selecting GPS events
+message GpsRouteProto {
+    string id = 1; // Identifier of the route
+    string vehicle_id = 2; // Identifier of the vehicle
+    int64 timestamp = 3; // Creation time of the route
+    int64 start = 4; // Start time
+    int64 stop = 5; // End time
+    string name = 6; // Route name
+    bool finished = 7; // Whether the route is finished
+}
+
+// A list of GPS routes
+message GpsRouteListProto {
+    repeated GpsRouteProto data = 1; // List of GPS routes
+}
+
+// A full GPS route consisting of the route information as well as all its events
+message FullGpsRouteProto {
+    GpsRouteProto route = 1; // GPS route information
+    repeated GpsEventProto events = 2; // GPS events for the time range of the route
+}

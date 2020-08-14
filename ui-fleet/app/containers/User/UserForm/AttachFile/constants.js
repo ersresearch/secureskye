@@ -1,0 +1,17 @@
+/*
+ * @Author: NhuHH 
+ * @Date: 2018-11-14 11:39:36 
+ * @Last Modified by: NhuHH
+ * @Last Modified time: 2018-11-29 14:23:25
+ */
+import { createAsyncTypes } from 'utils/actionUtils';
+const PREFIX = 'ATTACHMENT_INFORMATION_';
+export const actionTypes = {
+  CHANGE_IMG: `${PREFIX}CHANGE_IMG`,
+  DELETE_IMAGE_ATTACHMENT_FILE: `${PREFIX}DELETE_IMAGE_ATTACHMENT_FILE`,
+  GET_IMAGE: createAsyncTypes(`${PREFIX}GET_IMAGE`),
+  UPLOAD_FILES_IMAGE: `${PREFIX}UPLOAD_FILES_IMAGE`,
+  UPDATE_ATTACHMENT_FILE_LIST: `${PREFIX}UPDATE_ATTACHMENT_FILE_LIST`,
+  RESET_DATA: `${PREFIX}RESET_DATA`,
+  UPDATE_DATA_IMAGE: `${PREFIX}UPDATE_DATA_IMAGE`,
+};

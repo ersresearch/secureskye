@@ -1,0 +1,187 @@
+$colorAlert: #FFDD42;
+$colorAlertRipple: #ffbc0b;
+$colorCritical:#ff003b;
+$colorCriticalRipple:#ff0022;
+$colorNormal:#f0f4f7;
+$colorNormalRipple:#e3e7e9;
+$colorInfo:#0aceff;
+$colorInfoRipple:#00b0ff;
+$colorRoute:#ffffff;
+$colorRouteRipple:#ffffff;
+$markerSize: 10px;
+$pointSize:12px;
+.circle-marker-ripple-alert {
+  background-color: $colorAlert;
+  width: $markerSize;
+  height: $markerSize;
+  border-radius: 50%;
+}
+
+.animation-alert-marker {
+  animation: rippleAlertMarker 1s linear 2;
+}
+
+.circle-point-ripple-alert {
+  background-color: $colorAlert;
+  width: $pointSize;
+  height: $pointSize;
+  border-radius: 50%;
+}
+
+.animation-alert-point {
+  animation: rippleAlertPoint 1s linear infinite;
+}
+
+.circle-marker-ripple-critical {
+  background-color: $colorCritical;
+  width: $markerSize;
+  height: $markerSize;
+  border-radius: 50%;
+}
+
+.animation-critical-marker {
+  animation: rippleCriticalMarker 1s linear 2;
+}
+
+.circle-point-ripple-critical {
+  background-color: $colorCritical;
+  width: $pointSize;
+  height: $pointSize;
+  border-radius: 50%;
+}
+
+.animation-critical-point {
+  animation: rippleCriticalPoint 1s linear infinite;
+}
+
+.circle-marker-ripple-location {
+  background-color: $colorRoute;
+  width: $markerSize;
+  height: $markerSize;
+  border-radius: 50%;
+}
+
+.animation-location-marker {
+  animation: rippleLocationMarker 1s linear 2;
+}
+
+.circle-point-ripple-normal {
+  background-color: $colorNormal;
+  width: $pointSize;
+  height: $pointSize;
+  border-radius: 50%;
+}
+.circle-point-ripple-info {
+  background-color: $colorInfo;
+  width: $pointSize;
+  height: $pointSize;
+  border-radius: 50%;
+}
+
+.circle-marker-ripple-last {
+  background-color: $colorRoute;
+  width: $pointSize;
+  height: $pointSize;
+  border-radius: 50%;
+}
+
+.animation-normal-point {
+  animation: rippleNormalPoint 1s linear infinite;
+}
+.animation-info-point {
+  animation: rippleInfoPoint 1s linear infinite;
+}
+.animation-last-marker {
+  animation: rippleLastMarker 1s linear 2;
+}
+
+.circle-marker-ripple-route {
+  background-color: $colorRoute;
+  width: $markerSize;
+  height: $markerSize;
+  border-radius: 50%;
+}
+
+.animation-route-marker {
+  animation: rippleRouteMarker 1s linear 2;
+}
+
+@keyframes rippleAlertMarker {
+  0% {
+    box-shadow: 0 0 0 0 rgba($colorAlert, 0.3),
+  }
+  100% {
+    box-shadow: 0 0 0 $markerSize rgba($colorAlertRipple, 0.3),
+  }
+}
+
+@keyframes rippleAlertPoint {
+  0% {
+    box-shadow: 0 0 0 0 rgba($colorAlert, 0.3),
+  }
+  100% {
+    box-shadow: 0 0 $pointSize $pointSize rgba($colorAlertRipple, 0.3),
+  }
+}
+
+@keyframes rippleCriticalMarker {
+  0% {
+    box-shadow: 0 0 0 0 rgba($colorCritical, 0.3),
+  }
+  100% {
+    box-shadow: 0 0 0 $markerSize rgba($colorCriticalRipple, 0.3),
+  }
+}
+
+@keyframes rippleCriticalPoint {
+  0% {
+    box-shadow: 0 0 0 0 rgba($colorCritical, 0.3),
+  }
+  100% {
+    box-shadow: 0 0 $pointSize $pointSize rgba($colorCriticalRipple, 0.3),
+  }
+}
+
+@keyframes rippleLocationMarker {
+  0% {
+    box-shadow: 0 0 0 0 rgba($colorRoute, 0.3),
+  }
+  100% {
+    box-shadow: 0 0 0 $markerSize rgba($colorRouteRipple, 0.3),
+  }
+}
+
+@keyframes rippleNormalPoint {
+  0% {
+    box-shadow: 0 0 0 0 rgba($colorNormal, 0.3),
+  }
+  100% {
+    box-shadow: 0 0 $pointSize $pointSize rgba($colorNormalRipple, 0.3),
+  }
+}
+@keyframes rippleInfoPoint {
+  0% {
+    box-shadow: 0 0 0 0 rgba($colorInfo, 0.3),
+  }
+  100% {
+    box-shadow: 0 0 $pointSize $pointSize rgba($colorInfoRipple, 0.3),
+  }
+}
+
+@keyframes rippleLastMarker {
+  0% {
+    box-shadow: 0 0 0 0 rgba($colorRoute, 0.3),
+  }
+  100% {
+    box-shadow: 0 0 0 $pointSize rgba($colorRouteRipple, 0.3),
+  }
+}
+
+@keyframes rippleRouteMarker {
+  0% {
+    box-shadow: 0 0 0 0 rgba($colorRoute, 0.3),
+  }
+  100% {
+    box-shadow: 0 0 0 $markerSize rgba($colorRouteRipple, 0.3),
+  }
+}

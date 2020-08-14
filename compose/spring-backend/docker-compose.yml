@@ -1,0 +1,601 @@
+version: '2.3'
+
+services:
+# Disable sharding for now
+#  mongodb-shard-1-master:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --shardsvr --replSet shard1
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    depends_on:
+#      - mongodb-shard-1-slave-1
+#      - mongodb-shard-1-slave-2
+#    healthcheck:
+#      test: "mongo localhost:27018/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-shard-1-slave-1:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --shardsvr --replSet shard1
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    healthcheck:
+#      test: "mongo localhost:27018/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-shard-1-slave-2:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --shardsvr --replSet shard1
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    healthcheck:
+#      test: "mongo localhost:27018/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-shard-2-master:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --shardsvr --replSet shard2
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    depends_on:
+#      - mongodb-shard-2-slave-1
+#      - mongodb-shard-2-slave-2
+#    healthcheck:
+#      test: "mongo localhost:27018/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-shard-2-slave-1:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --shardsvr --replSet shard2
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    healthcheck:
+#      test: "mongo localhost:27018/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-shard-2-slave-2:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --shardsvr --replSet shard2
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    healthcheck:
+#      test: "mongo localhost:27018/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-shard-3-master:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --shardsvr --replSet shard3
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    depends_on:
+#      - mongodb-shard-3-slave-1
+#      - mongodb-shard-3-slave-2
+#    healthcheck:
+#      test: "mongo localhost:27018/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-shard-3-slave-1:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --shardsvr --replSet shard3
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    healthcheck:
+#      test: "mongo localhost:27018/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-shard-3-slave-2:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --shardsvr --replSet shard3
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    healthcheck:
+#      test: "mongo localhost:27018/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#
+#  mongodb-config-master:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --configsvr --replSet configserver
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    depends_on:
+#      - mongodb-config-slave-1
+#      - mongodb-config-slave-2
+#    healthcheck:
+#      test: "mongo localhost:27019/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-config-slave-1:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --configsvr --replSet configserver
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    healthcheck:
+#      test: "mongo localhost:27019/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#  mongodb-config-slave-2:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongod --keyFile /etc/mongo/shard.keyfile --configsvr --replSet configserver
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    healthcheck:
+#      test: "mongo localhost:27019/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+#      interval: 1s
+#      timeout: 10s
+#      retries: 10
+#    mem_limit: 524288000 # 500m
+#
+#  mongodb-router-1:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongos --keyFile /etc/mongo/shard.keyfile --port 27017 --configdb configserver/mongodb-config-master,mongodb-config-slave-1,mongodb-config-slave-2 --bind_ip_all
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    depends_on:
+#      - mongodb-config-master
+#      - mongodb-shard-1-master
+#      - mongodb-shard-2-master
+#      - mongodb-shard-3-master
+#    ports:
+#      - "27017:27017"
+#    mem_limit: 262144000 # 250m
+#  mongodb-router-2:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb:0.6.3
+#    command: mongos --keyFile /etc/mongo/shard.keyfile --port 27017 --configdb configserver/mongodb-config-master,mongodb-config-slave-1,mongodb-config-slave-2 --bind_ip_all
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: mongodb
+#      MONGO_INITDB_ROOT_PASSWORD: mongodb
+#    depends_on:
+#      - mongodb-config-master
+#      - mongodb-shard-1-master
+#      - mongodb-shard-2-master
+#      - mongodb-shard-3-master
+#    ports:
+#      - "27018:27017"
+#    mem_limit: 262144000 # 250m
+#
+#  mongodb-init:
+#    image: 10.0.0.7/secureskye/secureskye/mongodb-init:0.6.3
+#    healthcheck:
+#      test: wget -q --spider $$(hostname -i):8080/actuator/health
+#      interval: 10s
+#      timeout: 30s
+#      retries: 30
+#    depends_on:
+#      mongodb-config-master:
+#        condition: service_healthy
+#      mongodb-shard-1-master:
+#        condition: service_healthy
+#      mongodb-shard-2-master:
+#        condition: service_healthy
+#      mongodb-shard-3-master:
+#        condition: service_healthy
+#      mongodb-router-1:
+#        condition: service_started
+#      mongodb-router-2:
+#        condition: service_started
+#      discovery:
+#        condition: service_healthy
+#    ports:
+#      - "10000:8080"
+
+
+
+
+
+  postgres:
+    image: 10.0.0.7/secureskye/secureskye/postgres:0.6.3
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: secureskye
+    healthcheck:
+      test: pg_isready -h $$(hostname -i) -q -U postgres
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "5432:5432"
+#    volumes:
+#      - "/srv/spring/postgres:/var/lib/postgresql/data"
+  mongodb:
+    image: mongo:4.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongodb
+      MONGO_INITDB_ROOT_PASSWORD: mongodb
+    healthcheck:
+      test: "mongo localhost/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "27017:27017"
+#    volumes:
+#      - "/srv/spring/mongodb:/data/db"
+  discovery:
+    image: consul:1.2.2
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8500
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "8500:8500"
+#    volumes:
+#      - "/srv/spring/discovery/data:/consul/data"
+#      - "/srv/spring/discovery/config:/consul/config"
+  prometheus:
+    image: 10.0.0.7/secureskye/secureskye/prometheus:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):9090
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    ports:
+      - "9090:9090"
+    depends_on:
+      discovery:
+        condition: service_healthy
+  grafana:
+    image:  10.0.0.7/secureskye/secureskye/grafana:0.6.3
+    ports:
+      - "3000:3000"
+#    volumes:
+#      - "/srv/spring/grafana:/var/lib/grafana"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+  uaa:
+    image: 10.0.0.7/secureskye/secureskye/oauth-uaa:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/uaa/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+  saa:
+    image: 10.0.0.7/secureskye/secureskye/oauth-saa:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/saa/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+  obd2device-admin:
+    image: 10.0.0.7/secureskye/secureskye/obd2device-admin:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+  obd2device-event:
+    image: 10.0.0.7/secureskye/secureskye/obd2device-event:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    depends_on:
+      # Disable sharding for now
+      #mongodb-init:
+      #  condition: service_healthy
+      #mongodb-router-1:
+      #  condition: service_started
+      #mongodb-router-2:
+      #  condition: service_started
+      mongodb:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+      obd2device-admin:
+        condition: service_healthy
+      vehicle-admin:
+        condition: service_healthy
+  vehicle-admin:
+    image: 10.0.0.7/secureskye/secureskye/vehicle-admin:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+  vehicle-message:
+    image: 10.0.0.7/secureskye/secureskye/vehicle-message:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      # Disable sharding for now
+      #mongodb-init:
+      #  condition: service_healthy
+      #mongodb-router-1:
+      #  condition: service_started
+      #mongodb-router-2:
+      #  condition: service_started
+      mongodb:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+      vehicle-admin:
+        condition: service_healthy
+  vehicle-registry:
+    image: 10.0.0.7/secureskye/secureskye/vehicle-registry:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+      vehicle-admin:
+        condition: service_healthy
+  gateway:
+    image: 10.0.0.7/secureskye/secureskye/gateway:0.6.3
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    depends_on:
+      discovery:
+        condition: service_healthy
+  ixs-main:
+    image: 10.0.0.7/secureskye/secureskye/ixs-main:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+  ie-main:
+    image: 10.0.0.7/secureskye/secureskye/ie-main:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # Disable sharding for now
+      #mongodb-init:
+      #  condition: service_healthy
+      #mongodb-router-1:
+      #  condition: service_started
+      #mongodb-router-2:
+      #  condition: service_started
+      mongodb:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+      vehicle-message:
+        condition: service_healthy
+      user-admin:
+        condition: service_healthy
+      notification-main:
+        condition: service_healthy
+  ota-vehicle:
+    image: 10.0.0.7/secureskye/secureskye/ota-vehicle:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # Disable sharding for now
+      #mongodb-init:
+      #  condition: service_healthy
+      #mongodb-router-1:
+      #  condition: service_started
+      #mongodb-router-2:
+      #  condition: service_started
+      mongodb:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+      vehicle-admin:
+        condition: service_healthy
+  notification-main:
+    image: 10.0.0.7/secureskye/secureskye/notification-main:0.6.3
+    environment:
+      EMAIL_USERNAME: "<username>"
+      EMAIL_PASSWORD: "<password>"
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # Disable sharding for now
+      #mongodb-init:
+      #  condition: service_healthy
+      #mongodb-router-1:
+      #  condition: service_started
+      #mongodb-router-2:
+      #  condition: service_started
+      mongodb:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+      user-admin:
+        condition: service_healthy
+  ui:
+    image: 10.0.0.7/secureskye/secureskye/ui:0.6.3
+    environment:
+      - CONSUL_HTTP_ADDR=discovery:8500
+#     - SERVER_PORT=4200 #nginx port, default = 4200
+    depends_on:
+      discovery:
+        condition: service_healthy
+  #      socketio:
+  #        condition: service_healthy
+  #  ui-fleet:
+  #    image: 10.0.0.7/secureskye/secureskye/ui-fleet:0.6.3
+  #    environment:
+  #      - CONSUL_HTTP_ADDR=discovery:8500
+  #      - SERVER_PORT=3000 #nginx port, default = 3000
+  #    depends_on:
+  #      discovery:
+  #        condition: service_healthy
+  #      socketio:
+  #        condition: service_healthy
+  user-admin:
+    image: 10.0.0.7/secureskye/secureskye/user-admin:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      # Disable sharding for now
+      #mongodb-init:
+      #  condition: service_healthy
+      #mongodb-router-1:
+      #  condition: service_started
+      #mongodb-router-2:
+      #  condition: service_started
+      mongodb:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+  user-settings:
+    image: 10.0.0.7/secureskye/secureskye/user-settings:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy
+      user-admin:
+        condition: service_healthy
+  licensing-main:
+    image: 10.0.0.7/secureskye/secureskye/licensing-main:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    depends_on:
+      postgres:
+        condition: service_healthy
+      discovery:
+        condition: service_healthy
+      uaa:
+        condition: service_healthy
+      saa:
+        condition: service_healthy

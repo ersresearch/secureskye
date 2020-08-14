@@ -1,0 +1,314 @@
+= User Working Flow
+Phung Tan Sang <sangpt3@fsoft.com.vn>
+:toc:
+:homepage: http://trillium.co.jp
+:icons: font
+:source-highlighter: pygments
+
+== Purpose
+
+This article will show you the working flow of a User.
+Start with how to register, get, update and delete a User through rest api
+
+=== 1. Register A User
+
+To perform this step you will need `User-admin-access-token` and user's information with encoded password
+
+[source]
+----
+Endpoint: POST https://{host}/api/users
+Authorization: Bearer {Admin-user-access-token}
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request Body:
+{ <1>
+    "name": "xxxx", <2>
+    "password": "xxx", <3>
+    "enabled": true,
+    "displayName": "xxxx",
+    "firstName": "xxxx",
+    "lastName": "xxxx",
+    "middleName": "xxxx",
+    "email": "xxxx",
+    "roles": [ <4>
+        {"id": "xxxx"},
+        {"id": "xxxx"},
+        ...
+    ]
+}
+Response:
+{ <5>
+    "id": "xxxx",
+    "name": "xxxx",
+    "enabled": true,
+    "displayName": "xxxx",
+    "firstName": "xxxx",
+    "lastName": "xxxx",
+    "middleName": "xxxx",
+    "email": "xxxx",
+    "roles": [
+        {
+            "id": "xxxx",
+            "name": "xxxx",
+            "authorities": [ <6>
+                {
+                    "id": "xxxx",
+                    "authority": "xxxx",
+                    "description": "xxxx"
+                },
+                ...
+            ]
+        },
+        ...
+    ]
+}
+----
+
+<1> Information of a User
+<2> User's login name
+<3> Encoded user's password
+<4> List of user's roles
+<5> Response from server after successful registered. Contain user's information
+<6> List of role's authorities
+
+==== Get list of user's roles
+
+[source]
+----
+ Endpoint: GET https://{host}/api/users/roles
+ Authorization: Bearer {Admin-user-access-token}
+ Header:
+ - Accept: application/json
+ Response:
+ {
+     "data": [
+         {
+             "id": "xxxx",<1>
+             "name": "xxxx",
+             "authorities": [
+                 {
+                     "id": "xxxx",
+                     "authority": "xxxx",
+                     "description": "xxxx"
+                 },
+                 ...
+             ]
+         },
+         ...
+     ]
+ }
+----
+<1> Role id
+
+
+=== 2. Get A User By Id
+
+To perform this step you will need `User-admin-access-token`, `user id` of a user
+
+[source]
+----
+Endpoint: GET https://{host}/api/users/{user_id}
+Authorization: Bearer {Admin-user-access-token}
+Header:
+- Accept: application/json
+Response:
+{
+    "id": "xxxx",<1>
+    "name": "xxxx",
+    "enabled": true,
+    "displayName": "xxxx",
+    "firstName": "xxxx",
+    "lastName": "xxxx",
+    "middleName": "xxxx",
+    "email": "xxxx",
+    "roles": [
+        {
+            "id": "xxxx",
+            "name": "xxxx",
+            "authorities": [
+                {
+                    "id": "xxxx",
+                    "authority": "xxxx",
+                    "description": "xxxx"
+                },
+                ...
+            ]
+        },
+        ...
+    ]
+}
+----
+
+<1> User's id
+
+=== 3. Get A User By Name
+
+To perform this step you will need `User-admin-access-token`
+
+[source]
+----
+Endpoint: GET https://{host}/api/users
+Authorization: Bearer {Admin-user-access-token}
+Header:
+- Accept: application/json
+Request param data:
+    name: "xxxx",
+Response:
+{
+    "data": [
+        {
+            "id": "xxxx",<1>
+            "name": "xxxx",
+            "enabled": true,
+            "displayName": "xxxx",
+            "firstName": "xxxx",
+            "lastName": "xxxx",
+            "middleName": "xxxx",
+            "email": "xxxx",
+            "roles": [
+                {
+                    "id": "xxxx",
+                    "name": "xxxx",
+                    "authorities": [
+                        {
+                            "id": "xxxx",
+                            "authority": "xxxx",
+                            "description": "xxxx"
+                        },
+                        ...
+                    ]
+                },
+                ...
+            ]
+        }
+    ]
+}
+----
+
+<1> User's id
+
+=== 4. Update A User
+
+To perform this step you will need `User-admin-access-token`, `user id` of a user
+
+[source]
+----
+Endpoint: PATCH https://{host}/api/users/{user_id}
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request Body:
+{ <1>
+    "name": "xxxx",
+    "enabled": true,
+    "displayName": "xxxx",
+    "firstName": "xxxx",
+    "lastName": "xxxx",
+    "middleName": "xxxx",
+    "email": "xxxx",
+    "roles": [{"id": "xxxx"}]
+}
+Response:
+{ <2>
+    "id": "xxxx",
+    "name": "xxxx",
+    "enabled": true,
+    "displayName": "xxxx",
+    "firstName": "xxxx",
+    "lastName": "xxxx",
+    "middleName": "xxxx",
+    "email": "xxxx",
+    "roles": [
+        {
+            "id": "xxxx",
+            "name": "xxxx",
+            "authorities": [
+                {
+                    "id": "xxxx",
+                    "authority": "xxxx",
+                    "description": "xxxx"
+                },
+                ...
+            ]
+        },
+        ...
+    ]
+}
+----
+
+<1> Information of a User
+<2> Response from server after successful updated. Contain user's information
+
+=== 5. Delete A User
+
+To perform this step you will need `User-admin-access-token`, `user id` of a user
+
+[source]
+----
+Endpoint: Delete https://{host}/api/users/{user_id}
+Authorization: Bearer {Admin-user-access-token}
+
+----
+
+=== 6. Get User Admin Access Token
+
+In This step, you will use the `client id`, `client secret`, `username` and `password` to get its `access token`.
+You don't need any authorization for this step
+
+[source]
+----
+Endpoint: POST https://{host}/uaa/oauth/token
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request form data:
+    client_id: "secureskye-webapp-client",
+    client_secret: "secureskye",
+    grant_type: "password",
+    username: "xxxx",
+    password: "xxxx"
+Response:
+{
+    "access_token": "xxxx", <1>
+    "token_type": "xxxx",
+    "refresh_token": "xxxx" <2>
+    "expires_in": xxxx, <3>
+    "scope": "xxxx"
+}
+----
+
+<1> The `access token` of a User Admin
+<2> Refresh token, use when the access token is expired
+<3> After this period of time, the token will be expired
+
+=== 7. Get User Admin Access Token By Refresh Token
+
+When the `access token` is expired you will use the `refresh_token` in step 5 to get new `access token`.
+You don't need any authorization for this step
+
+[source]
+----
+Endpoint: POST https://{host}/uaa/oauth/token
+Header:
+- Content-Type: application/json
+- Accept: application/json
+Request form data:
+    client_id: "secureskye-webapp-client",
+    client_secret: "secureskye",
+    grant_type: "refresh_token",
+    refresh_token: "xxxx"
+Response:
+{
+    "access_token": "xxxx", <1>
+    "token_type": "xxxx",
+    "refresh_token": "xxxx" <2>
+    "expires_in": xxxx, <3>
+    "scope": "xxxx"
+}
+----
+
+<1> The `access token` of a User Admin
+<2> Refresh token, use when the access token is expired
+<3> After this period of time, the token will be expired
+

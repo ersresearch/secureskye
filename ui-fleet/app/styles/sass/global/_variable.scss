@@ -1,0 +1,121 @@
+/*
+  Color Website
+*/
+$white: #FFFFFF;
+$black: #1C1C1C;
+$gray1: #F2F2F2;
+$gray2: #BEBEBE;
+$gray3: #707070;
+$gray4: #535353;
+$red1: #E50012;
+$red2: #BF000F;
+
+
+%title1 {
+  color: $white;
+  font-size: 24px;
+  font-family: 'Helvetica_Bold';
+}
+%title2 {
+  color: $black;
+  font-size: 24px;
+  font-family: 'Helvetica_Bold';
+}
+%title3 {
+  color: $white;
+  font-size: 22px;
+  font-family: 'Helvetica_Bold';
+}
+%title4 {
+  color: $black;
+  font-size: 22px;
+  font-family: 'Helvetica_Bold';
+}
+%text1 {
+  color: $black;
+  font-size: 24px;
+  font-family: 'Helvetica_Medium';
+}
+%text2 {
+  color: $black;
+  font-size: 21px;
+  font-family: 'Helvetica_Bold';
+}
+%text3 {
+  color: $black;
+  font-size: 21px;
+  font-family: 'Helvetica_Regular';
+}
+%text4 {
+  color: $black;
+  font-size: 19px;
+  font-family: 'Helvetica_Bold';
+}
+%text5 {
+  color: $black;
+  font-size: 18px;
+  font-family: 'Helvetica_Medium';
+}
+%text6 {
+  color: $black;
+  font-size: 16px;
+  font-family: 'Helvetica_Bold';
+}
+%text7 {
+  color: $white;
+  font-size: 14px;
+  font-family: 'Helvetica_Bold';
+}
+
+%subtitle1 {
+  @extend %title1;
+  border-left: 4px solid $red1;
+  padding-left: 20px;
+}
+
+%subtitle2 {
+  @extend %title2;
+  border-left: 4px solid $red1;
+  padding-left: 10px;
+}
+
+%subtitle3 {
+  @extend %title3;
+  border-left: 4px solid $red1;
+  padding-left: 10px;
+}
+
+%subtitle4 {
+  @extend %title4;
+  border-left: 4px solid $red1;
+  padding-left: 12px;
+}
+
+
+/* End Color Website */
+
+
+/*
+Main-menu
+*/
+
+
+/*
+Empty view
+*/
+
+
+/*
+Job Description popup
+*/
+
+
+// Glyphicons font path
+
+
+// Font Family
+
+
+/*
+  vertical-align
+*/

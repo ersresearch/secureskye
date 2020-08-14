@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package vehicle.message;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.vehicle.message.api.proto";
+option java_outer_classname = "EcuProto";
+
+// A raw ECU alert
+message EcuAlertProto {
+    string id = 1; // Id
+    string ecu_id = 2; // The random UUID for ecu
+    string vehicle_id = 3; // Vehicle ID
+    EcuAlertLocationProto ecu_alert_location = 4; // ECU Alert location
+    string alert_title = 5; // alert title
+    string detail_alert = 6; // Detail alert information
+    string alert_type = 7; // Type
+    string alert_status = 8; // Status
+    int64 timestamp = 9;
+}
+
+message EcuAlertListProto {
+    repeated EcuAlertProto data = 1;
+}
+
+// A raw ECU alert location
+message EcuAlertLocationProto {
+    double latitude = 1; // Latitude
+    double longitude = 2; // Longitude
+}

@@ -1,0 +1,120 @@
+#
+# Copyright (C) 2017-2018 Trillium Inc. <support@trilliumsecure.com>
+#
+
+spring:
+  datasource:
+    url: jdbc:postgresql://192.168.10.220:5432/secureskye
+    username: postgres
+    password: postgres
+  data:
+    mongodb:
+      host: 192.168.10.220
+      database: secureskye
+      username: mongodb
+      password: mongodb
+  cloud:
+    consul:
+      host: 192.168.10.220
+      discovery:
+        instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+        health-check-path: /actuator/health
+        tags:
+          - >-
+            traefik.frontend.rule=
+            Path:
+            /api/vehicles/events,
+            /api/vehicles/{id}/events,
+            /api/vehicles/messages,
+            /api/vehicles/{id}/messages,
+            /api/vehicles/{id}/routes,
+            /api/vehicles/connection,
+            /api/vehicles/component-alerts,
+            /api/vehicles/{id}/component-alerts,
+            /api/vehicles/{id}/component-status,
+            /api/routes/{id},
+            /api/routes/{id}/{command:(finish|rename)},
+            /api/vehicles/ecus/alerts,
+            /api/vehicles/{id}/ecus/alerts,
+            /api/vehicles/ecus/{id}/alerts,
+            /api/vehicles/ecus/alerts/{id},
+            /api/vehicles/ecus/alerts
+          - traefik.frontend.priority=20
+
+security:
+  oauth2:
+    secureskye:
+      client:
+        access-token-uri: http://saa/saa/oauth/token
+        client-id: secureskye-vehicle-message-service
+        client-secret: secureskye-service
+        scope: none
+        added-info: jwt
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,prometheus
+
+socketio:
+  service-id: socketio
+  path: /socketio/socket.io
+
+---
+spring:
+  profiles: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/secureskye
+  data:
+    mongodb:
+      host: localhost
+  cloud:
+    consul:
+      host: localhost
+
+server:
+  port: 11030
+
+---
+spring:
+  profiles: debug
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+---
+spring:
+  profiles: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/secureskye
+  data:
+    mongodb:
+      # Disable sharding for now
+      #host: mongodb-router-1,mongodb-router-2
+      host: mongodb
+  cloud:
+    consul:
+      host: discovery
+      discovery:
+          instance-id: ${spring.application.name}:${HOSTNAME}
+          prefer-ip-address: true
+
+server:
+  undertow:
+    accesslog:
+      enabled: true
+      dir: /var/log
+
+logging:
+  path: /var/log
+  level:
+    root: WARN
+    jp.co.trillium.*: INFO
+
+---
+spring:
+  profiles: docker-local
+  data:
+    mongodb:
+      host: mongodb

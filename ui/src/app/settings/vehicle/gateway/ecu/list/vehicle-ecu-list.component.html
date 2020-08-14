@@ -1,0 +1,64 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-5">
+              <h3 class="card-title clearfix" *ngIf="!gatewayInfo">ECU</h3>
+              <h3 class="card-title clearfix" *ngIf="gatewayInfo">Gateway
+                <small class="text-muted small text-uppercase">{{gatewayInfo.id}}</small>
+              </h3>
+            </div>
+            <div class="col-7 text-right" *ngIf="gatewayInfo">
+              <a class="btn btn-primary" [routerLink]="['register']">
+                <i class="fa fa-object-ungroup"></i>&nbsp;Register</a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>ECU ID</th>
+                      <th>Message ID</th>
+                      <th>Communication Protocol</th>
+                      <th>Rule DB Status</th>
+                      <th>Error count</th>
+                      <th class="operation"></th>
+                    </tr>
+                  </thead>
+                  <tbody *ngIf="items">
+                    <tr *ngFor="let item of items | slice : (ecuListPageNo-1)*itemsPerPage : ecuListPageNo*itemsPerPage">
+                      <td>{{ item.interfaceInfo.ecuId }}</td>
+                      <td>{{ item.interfaceInfo.messageId }}</td>
+                      <td>{{ ecuCommProtocol[item.interfaceInfo.commProtocol] }}</td>
+                      <td>{{ item.errorCode.ruleDbStatus }}</td>
+                      <td>{{ item.errorCode.errorCount }}</td>
+                      <td class="operation text-right">
+                        <div class="btn-group" dropdown container="body" placement="bottom right">
+                          <a class="btn btn-secondary" [routerLink]="[item.id]">
+                            View</a>
+                          <a class="btn btn-secondary dropdown-toggle dropdown-toggle-split" dropdownToggle>
+                          </a>
+                          <ul *dropdownMenu class="dropdown-menu dropdown-menu-right" role="menu">
+                            <li role="menuitem">
+                              <a class="dropdown-item" [routerLink]="[item.id, 'edit']">
+                                <i class="fa fa-pencil"></i>&nbsp;Edit</a>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <pagination *ngIf="items" [totalItems]="items.length" [(ngModel)]="ecuListPageNo" [maxSize]="6" [itemsPerPage]="itemsPerPage"></pagination>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,36 @@
+<div class="animated fadeIn">
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-5">
+          <h3 class="card-title mb-0">Export</h3>
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="col-12" [formGroup]="exportForm">
+          <div class="form-group row">
+            <label for="exportFormat" class="col-sm-2 col-form-label">Format</label>
+            <div class="col-sm-10">
+              <select id="exportFormat" name="exportFormat" class="form-control" formControlName="exportFormat" [ngClass]="fieldValidationClass('exportFormat')">
+                <option *ngFor="let exportFormat of EXPORT_FORMAT" [value]="exportFormat">{{exportFormat | uppercase}}</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="fieldValidationError('exportFormat', 'required')">Please choose an export format!</div>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="exportPassword" class="col-sm-2 col-form-label">Password</label>
+            <div class="col-sm-10">
+              <input id="exportPassword" type="password" name="exportPassword" class="form-control" formControlName="exportPassword" [ngClass]="fieldValidationClass('exportPassword')">
+              <div class="invalid-feedback" *ngIf="fieldValidationError('exportPassword', 'required')">Password required!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer" *ngIf="exportForm">
+      <button type="button" class="btn btn-success" (click)="export()">
+        <i class="fa fa-download"></i>&nbsp;Export</button>
+    </div>
+  </div>
+</div>

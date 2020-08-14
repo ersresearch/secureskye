@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package user.admin;
+
+import "totp.proto";
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.user.admin.api.proto";
+option java_outer_classname = "Proto";
+
+// A credential with its model
+message CredentialProto {
+    string id = 1; // Identifier of the user
+    int32 version = 2; // Model name
+    string name = 3; // User name
+    string password = 4; // Password
+    bool enabled = 5; // User is disabled or not
+    string avatar = 6; // Link of profile icon
+    string avatar_format = 7; // Format of profile icon
+    bool avatar_third_party = 8; // Avatar source from 3rd party, skip avatar validation
+    string first_name = 9; // First name
+    string last_name = 10; // Last name
+    string email = 11; // Email of user
+    string phone_area_code = 12; // Phone area code
+    string phone_number = 13; // Phone number
+    bool gender = 14; // User gender
+    int64 birthday = 15; // User birthday
+    string nationality = 16; // User nationality
+    string address = 17; // User address
+    repeated RoleProto roles = 18; // Authorities array
+    totp.TwoFactorAuthenticationStatusProto tfa = 19; // 2FA status info
+    repeated AdditionalInfoProto additional_info = 20; // Additional Info
+    repeated AttachmentProto attachments = 21; // Attachments info
+}
+
+// Authority with its model
+message AuthorityProto {
+    string id = 1; // Id of authority
+    string authority = 2; // Authority name
+    string description = 3; // Description
+}
+
+// Role with its model
+message RoleProto {
+    string id = 1; // Id of role
+    string name = 2; // Role name
+    string description = 3; // Role description
+}
+
+message RoleDetailProto {
+    string id = 1; // Id of role
+    string name = 2; // Role name
+    string description = 3; // Role description
+    repeated CredentialSummaryProto users = 4; // User have this role
+    repeated AuthorityProto authorities = 5; // List of authority
+}
+
+message CredentialSummaryProto {
+    string id = 1; // Identifier of the user
+    string name = 2; // User name
+    string email = 3; // Email of user
+}
+
+// List of credentials
+message CredentialListProto {
+    repeated CredentialProto data = 1; // Credential proto element
+}
+
+// List of authorities
+message AuthorityListProto {
+    repeated AuthorityProto data = 1; // Authority proto element
+}
+
+// User statistics
+message UserStatisticsProto {
+    int64 member_count = 1; // Registered member count
+}
+
+// List of role
+message RoleSetProto {
+    repeated RoleProto data = 1; // Authority proto element
+}
+
+// Additional Info
+message AdditionalInfoProto {
+    string id = 1; // Id of Additional Info
+    string key = 2; // Name info
+    string value = 3; // Value info
+}
+
+// Attachment for user
+message AttachmentProto {
+    string id = 1; // Id of Attachment Info
+    string file_id = 2; // Id of File Attachment
+    string file_name = 3; // Name of File Attachment
+    string url_image = 4; //Url image of File Attachment
+}

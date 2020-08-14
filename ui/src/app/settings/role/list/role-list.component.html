@@ -1,0 +1,47 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-5">
+              <h3 class="card-title clearfix">Users</h3>
+            </div>
+            <div class="col-7 text-right">
+              <a class="btn btn-primary" [routerLink]="['add']">
+                <i class="fa fa-user"></i>&nbsp;Add new role</a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Role</th>
+                      <th>Authorities</th>
+                      <th class="operation"></th>
+                    </tr>
+                  </thead>
+                  <tbody *ngIf="items">
+                    <tr *ngFor="let item of items | slice : (roleListPageNo-1)*itemsPerPage : roleListPageNo*itemsPerPage">
+                      <td class="role-name">{{ item.name }}</td>
+                      <td class="authorities">
+                        <span class="badge badge-pill badge-{{roleService.colorAuthority(authority)}}" *ngFor="let authority of item.authorities">{{ authority.authority }}</span>
+                      </td>
+                      <td class="operation text-right">
+                        <a class="btn btn-secondary" [routerLink]="[item.id]">
+                          View</a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <pagination *ngIf="items" [totalItems]="items.length" [(ngModel)]="roleListPageNo" [maxSize]="6" [itemsPerPage]="itemsPerPage"></pagination>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

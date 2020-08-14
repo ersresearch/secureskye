@@ -1,0 +1,80 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <form #ecuForm="ngForm" *ngIf="ecuInfo">
+          <div class="card-body">
+            <h3 class="card-title mb-0" *ngIf="ecuInfo.id">ECU
+              <small class="text-muted small text-uppercase">{{ecuInfo.id}}</small>
+            </h3>
+            <h3 class="card-title mb-0" *ngIf="!ecuInfo.id">ECU Register
+            </h3>
+            <hr>
+
+            <!-- Gateway -->
+            <div class="card">
+              <div class="card-header">Gateway</div>
+              <div class="card-body">
+                <div class="form-group row">
+                  <label class="col-sm-2 col-form-label">Gateway ID</label>
+                  <label class="col-sm-10 col-form-label">
+                    {{ecuInfo.parentEcuId}}
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interface Infomation -->
+            <div class="card">
+              <div class="card-header">Interface Infomation</div>
+              <div class="card-body">
+                <div class="form-group row">
+                  <label for="messageId" class="col-sm-2 col-form-label">Message ID</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="messageId" name="messageId" class="form-control" [(ngModel)]="ecuInfo.interfaceInfo.messageId"
+                      #messageId="ngModel" [ngClass]="fieldValidationClass(messageId)">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="ecuId" class="col-sm-2 col-form-label">ECU ID</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="ecuId" name="ecuId" class="form-control" [(ngModel)]="ecuInfo.interfaceInfo.ecuId"
+                      #ecuId="ngModel" [ngClass]="fieldValidationClass(ecuId)">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="col-sm-2 col-form-label">Connected Vehicle</label>
+                  <div class="col-sm-10">
+                    <a *ngIf="connectedVehicle" class="form-control-plaintext" [routerLink]="['/vehicle', connectedVehicle.id]">{{connectedVehicle.name}}</a>
+                    <span *ngIf="!connectedVehicle" class="form-control-plaintext text-muted">n/a</span>
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label for="commProtocol" class="col-sm-2 col-form-label">Communication Protocol</label>
+                  <div class="col-sm-10">
+                    <ng-select [items]="ecuCommProtocols" bindValue="value" [(ngModel)]="ecuInfo.interfaceInfo.commProtocol"
+                      [clearable]="false" #commProtocol="ngModel" name="commProtocol">
+                    </ng-select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Error Code -->
+            <div class="card">
+              <div class="card-header">Error Code</div>
+              <div class="card-body">
+                <app-error-code #errorCodeForm [newCodeInfoList]="newCodeInfoList" [errorCode]="ecuInfo.errorCode"></app-error-code>
+              </div>
+            </div>
+          </div>
+          <div class="card-footer" *ngIf="ecuForm">
+            <button type="button" class="btn btn-success group-fix" *ngIf="!ecuInfo.id" (click)="registerEcu()">Register</button>
+            <button type="button" class="btn btn-success group-fix" *ngIf="ecuInfo.id" (click)="updateEcuInfo(false)">Update</button>
+            <button type="button" class="btn btn-danger group-fix" *ngIf="ecuInfo.id" (click)="showConfirmDialog()">Remove</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

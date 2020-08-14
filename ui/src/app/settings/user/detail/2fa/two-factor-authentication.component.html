@@ -1,0 +1,52 @@
+<div class="animated fadeIn">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="row justify-content-md-center" *ngIf="totpSecret">
+              <h1 class="col-md-10 display-4">2-Factor Authentication</h1>
+              <p class="col-md-10 mb-0">Follow below guide to complete 2FA registration</p>
+              <hr class="col-md-10" />
+              <div class="col-md-10">
+                <div class="row">
+                  <h3 class="col-12">Download Authenticator</h3>
+                  <p class="col-12">You can use
+                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2">Goole Authenticator</a> or any application that support
+                    <abbr title="Time-based One-Time Password" class="initialism">TOTP</abbr>.</p>
+                  <h3 class="col-12">Setup Authenticator</h3>
+                  <p class="col-12">Scan the QR Code or setup manually with the secret code.</p>
+                  <div class="col-md-7 col-lg-6 text-center">
+                    <ngx-qrcode [qrc-value]="totpSecret.otpAuthUri">
+                    </ngx-qrcode>
+                  </div>
+                  <div class="col-md-5 col-lg-6">
+                    <h5>Secret key</h5>
+                    <p class="text-light bg-dark p-2 ptr-cursor" *ngIf="!showSecretKey" (click)="showSecretKey = true">
+                      <i>Show me</i>
+                    </p>
+                    <p class="text-light bg-dark p-2 text-center" *ngIf="showSecretKey">{{totpSecret.secret}}</p>
+                  </div>
+                  <h3 class="col-12">Scratch codes</h3>
+                  <p class="col-12">Take note of the scratch codes in case you lost access to your device.</p>
+                  <div class="col-12">
+                    <p class="bg-light p-2 text-center">{{totpSecret.recoveryCode1}} - {{totpSecret.recoveryCode2}} - {{totpSecret.recoveryCode3}} - {{totpSecret.recoveryCode4}}
+                      - {{totpSecret.recoveryCode5}}</p>
+                  </div>
+                  <h3 class="col-12">Verification</h3>
+                  <p class="col-12">To verify your authenticator setup, please enter the verification code displayed on your device.</p>
+                  <div class="col-8 form-group" [formGroup]="otpForm" *ngIf="otpForm">
+                    <input #otp type="text" formControlName="otp" class="form-control" id="otp" [ngClass]="fieldValidationClass('otp')" autofocus>
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('otp', 'required')">Please enter verification code displayed on your mobile.</div>
+                    <div class="invalid-feedback" *ngIf="fieldValidationError('otp', 'pattern')">Verification code is 6 digit number.</div>
+                  </div>
+                  <div class="col-4 mb-4">
+                    <button type="button" class="btn btn-block btn-success" (click)="verifyOtp()">Verify</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

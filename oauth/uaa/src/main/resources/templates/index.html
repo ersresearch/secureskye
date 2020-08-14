@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:sec="http://www.w3.org/1999/xhtml" xmlns:th="http://www.w3.org/1999/xhtml">
+<head lang="en">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>OAuth Server Index</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/4.0.0-beta.2/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/octicons/4.3.0/build/font/octicons.css}"/>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-7">
+            <h1 class="page-header">OAuth Server</h1>
+        </div>
+        <div class="col-md-5 media">
+            <div class="align-self-end">
+                <form th:action="@{/logout.do}">
+                    Logged in as: <b><span sec:authentication="name"></span></b>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        <span class="octicon octicon-sign-out"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <h2>Approvals</h2>
+
+            <p>
+                If you revoke the approval for one scope of a client all tokens for that client will be removed as well.
+            </p>
+            <table class="table table-striped table-sm">
+                <thead class="thead-dark">
+                <tr>
+                    <th>Client</th>
+                    <th>Scope</th>
+                    <th>Expires at</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="approval : ${approvals}">
+                    <td th:text="${approval.clientId}"></td>
+                    <td th:text="${approval.scope}"></td>
+                    <td th:text="${approval.expiresAt}"></td>
+                    <td>
+                        <form th:action="@{/approval/revoke}" method="POST">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            <input type="hidden" name="userId" th:value="${approval.userId}"/>
+                            <input type="hidden" name="clientId" th:value="${approval.clientId}"/>
+                            <input type="hidden" name="scope" th:value="${approval.scope}"/>
+                            <input type="hidden" name="expiresAt"
+                                   th:value="${#dates.format(approval.expiresAt, 'yyyy-MM-dd HH:mm:ss')}"/>
+                            <input type="hidden" name="status" th:value="${approval.status}"/>
+                            <input type="hidden" name="lastUpdatedAt"
+                                   th:value="${#dates.format(approval.lastUpdatedAt, 'yyyy-MM-dd HH:mm:ss')}"/>
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                <span class="octicon octicon-trashcan"></span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12" sec:authorize="hasAuthority('uaa:read')">
+            <h2>Clients</h2>
+            <table class="table table-striped table-sm">
+                <caption><a class="btn btn-outline-secondary btn-sm" th:href="@{/clients/form}">
+                    <span class="octicon octicon-plus"></span>
+                </a></caption>
+                <thead class="thead-dark">
+                <tr>
+                    <th>Client ID</th>
+                    <th>Resource IDs</th>
+                    <th>Scopes</th>
+                    <th>Grant Types</th>
+                    <th>Roles</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="client : ${clientDetails}">
+                    <td th:text="${client.clientId}"></td>
+                    <td th:text="${client.resourceIds}"></td>
+                    <td th:text="${client.scope}"></td>
+                    <td th:text="${client.authorizedGrantTypes}"></td>
+                    <td th:text="${client.authorities}"></td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a class="btn btn-outline-secondary btn-sm"
+                               th:href="@{/clients/form(client=${client.clientId})}">
+                                <span class="octicon octicon-pencil"></span>
+                            </a>
+                            <a class="btn btn-outline-secondary btn-sm"
+                               th:href="@{'/clients/form/'+${client.clientId}+'/delete'}">
+                                <span class="octicon octicon-trashcan"></span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

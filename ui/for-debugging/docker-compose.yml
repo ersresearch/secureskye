@@ -1,0 +1,378 @@
+version: '2.3'
+
+services:
+  socketio:
+    image: 10.0.0.7/secureskye/secureskye/websocket-server:0.6.3
+    environment:
+      MONGO_USERNAME: mongodb
+      MONGO_PASS: mongodb
+      # MONGO_HOST: mongodb
+      # MONGO_PORT: 27017
+      # MONGO_DBNAME: socketio
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):3000/health-check
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+      - discovery
+    mem_limit: 512m
+  postgres:
+    image: 10.0.0.7/secureskye/secureskye/postgres:0.6.3
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: secureskye
+    healthcheck:
+      test: pg_isready -h $$(hostname -i) -q -U postgres
+      interval: 5s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "5432:5432"
+    volumes:
+     - "postgres_data:/var/lib/postgresql/data"
+    mem_limit: 2048m
+  mongodb:
+    image: mongo:4.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongodb
+      MONGO_INITDB_ROOT_PASSWORD: mongodb
+    healthcheck:
+      test: "mongo localhost/test --quiet --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)'"
+      interval: 5s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "27017:27017"
+    volumes:
+     - "mongodb_data:/data/db"
+     - "mongodb_config:/data/configdb"
+    mem_limit: 2048m
+  discovery:
+    image: consul:1.2.2
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8500
+      interval: 5s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "8500:8500"
+    volumes:
+     - "consul_data:/consul/data"
+     - "consul_config:/consul/config"
+    mem_limit: 256m
+  prometheus:
+    image: 10.0.0.7/secureskye/secureskye/prometheus:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):9090
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "9090:9090"
+    depends_on:
+      - discovery
+    mem_limit: 256m
+#  grafana:
+  #    image:  10.0.0.7/secureskye/secureskye/grafana:0.6.3
+#    ports:
+#      - "3000:3000"
+#    volumes:
+#      - "grafana:/var/lib/grafana"
+#    depends_on:
+#      - prometheus
+#    user: "104"
+  postgres-init:
+    image: 10.0.0.7/secureskye/secureskye/postgres-init:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11111:8080"
+    depends_on:
+      - postgres
+      - discovery
+    mem_limit: 512m
+  uaa:
+    image: 10.0.0.7/secureskye/secureskye/oauth-uaa:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/uaa/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11000:8080"
+    depends_on:
+      - postgres
+      - discovery
+    mem_limit: 1536m
+  saa:
+    image: 10.0.0.7/secureskye/secureskye/oauth-saa:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/saa/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11010:8080"
+    depends_on:
+      - postgres
+      - discovery
+    mem_limit: 1536m
+  obd2device-admin:
+    image: 10.0.0.7/secureskye/secureskye/obd2device-admin:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11110:8080"
+    depends_on:
+      - postgres
+      - discovery
+      - uaa
+      - saa
+    mem_limit: 1024m
+  obd2device-event:
+    image: 10.0.0.7/secureskye/secureskye/obd2device-event:0.6.3
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,docker-local
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11130:8080"
+    depends_on:
+      - mongodb
+      - discovery
+      - uaa
+      - saa
+      - obd2device-admin
+      - vehicle-admin
+      - vehicle-message
+      - socketio
+    mem_limit: 1024m
+  vehicle-admin:
+    image: 10.0.0.7/secureskye/secureskye/vehicle-admin:0.6.3
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,docker-local
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11020:8080"
+    depends_on:
+      - mongodb
+      - postgres
+      - discovery
+      - uaa
+      - saa
+    mem_limit: 1024m
+  vehicle-message:
+    image: 10.0.0.7/secureskye/secureskye/vehicle-message:0.6.3
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,docker-local
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11030:8080"
+    depends_on:
+      - mongodb
+      - discovery
+      - uaa
+      - saa
+      - vehicle-admin
+      - socketio
+    mem_limit: 1024m
+  vehicle-registry:
+    image: 10.0.0.7/secureskye/secureskye/vehicle-registry:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11040:8080"
+    depends_on:
+      - postgres
+      - discovery
+      - uaa
+      - saa
+      - vehicle-admin
+    mem_limit: 1024m
+  gateway:
+    image: 10.0.0.7/secureskye/secureskye/gateway:0.6.3
+    healthcheck:
+      test: traefik healthcheck
+      interval: 5s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    depends_on:
+      - discovery
+    mem_limit: 256m
+  ixs-main:
+    image: 10.0.0.7/secureskye/secureskye/ixs-main:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11050:8080"
+    depends_on:
+      - postgres
+      - discovery
+      - uaa
+      - saa
+    mem_limit: 1024m
+  ie-main:
+    image: 10.0.0.7/secureskye/secureskye/ie-main:0.6.3
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,docker-local
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11060:8080"
+    depends_on:
+      - postgres
+      - mongodb
+      - discovery
+      - uaa
+      - saa
+      - vehicle-message
+      - user-admin
+      - notification-main
+    mem_limit: 1024m
+  ota-vehicle:
+    image: 10.0.0.7/secureskye/secureskye/ota-vehicle:0.6.3
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,docker-local
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11070:8080"
+    depends_on:
+      - postgres
+      - mongodb
+      - discovery
+      - uaa
+      - saa
+      - vehicle-admin
+      - vehicle-registry
+    mem_limit: 1024m
+  notification-main:
+    image: 10.0.0.7/secureskye/secureskye/notification-main:0.6.3
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,docker-local
+      EMAIL_USERNAME: "<username>"
+      EMAIL_PASSWORD: "<password>"
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11080:8080"
+    depends_on:
+      - postgres
+      - mongodb
+      - discovery
+      - uaa
+      - saa
+      - user-admin
+    mem_limit: 1024m
+  #  ui:
+  #    image: 10.0.0.7/secureskye/secureskye/ui:0.6.3
+  #    environment:
+  #      - CONSUL_HTTP_ADDR=discovery:8500
+  #      # - SERVER_PORT=4200 #nginx port, default = 4200
+  #    healthcheck:
+  #      test: wget -q --spider $$(hostname -i):$$SERVER_PORT/ui-application/status
+  #      interval: 10s
+  #      timeout: 360s
+  #      retries: 50
+  #    ports:
+  #      - "4200:4200"
+  #    depends_on:
+  #      - discovery
+  #      - socketio
+  ui-fleet:
+    image: 10.0.0.7/secureskye/secureskye/ui-fleet:0.6.3
+    environment:
+      - CONSUL_HTTP_ADDR=discovery:8500
+      - SERVER_PORT=3001
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):$$SERVER_PORT/ui-application/status
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "3001:3001"
+    depends_on:
+      - discovery
+      - socketio
+    mem_limit: 256m
+  user-admin:
+    image: 10.0.0.7/secureskye/secureskye/user-admin:0.6.3
+    environment:
+      SPRING_PROFILES_ACTIVE: docker,docker-local
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11090:8080"
+    depends_on:
+      - postgres
+      - mongodb
+      - discovery
+      - uaa
+      - saa
+    mem_limit: 1024m
+  licensing-main:
+    image: 10.0.0.7/secureskye/secureskye/licensing-main:0.6.3
+    healthcheck:
+      test: wget -q --spider $$(hostname -i):8080/actuator/health
+      interval: 10s
+      timeout: 360s
+      retries: 50
+    ports:
+      - "11100:8080"
+    depends_on:
+      - postgres
+      - discovery
+      - uaa
+      - saa
+    mem_limit: 1024m
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  mongodb_config:
+  consul_data:
+  consul_config:
+  # grafana:

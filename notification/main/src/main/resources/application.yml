@@ -1,0 +1,122 @@
+#
+# Copyright (C) 2017-2018 Trillium Inc. <support@trilliumsecure.com>
+#
+
+spring:
+  datasource:
+    url: jdbc:postgresql://192.168.10.220:5432/secureskye
+    username: postgres
+    password: postgres
+  data:
+    mongodb:
+      host: 192.168.10.220
+      database: secureskye
+      username: mongodb
+      password: mongodb
+  cloud:
+    consul:
+      host: 192.168.10.220
+      discovery:
+        instance-id: ${spring.application.name}:${vcap.application.instance_id:${spring.application.instance_id:${random.value}}}
+        health-check-path: /actuator/health
+        tags:
+          - >-
+            traefik.frontend.rule=
+            PathPrefix:
+            /api/notifications,
+            /api/internal/notifications
+  mail:
+    default-encoding: UTF-8
+    host: smtp.gmail.com
+    username: ${EMAIL_USERNAME:}
+    password: ${EMAIL_PASSWORD:}
+    port: 587
+    properties:
+      mail:
+        smtp:
+          ssl:
+            trust: smtp.gmail.com
+          auth: true
+          starttls:
+            enable: true
+          from: no-reply@trilliumsecure.com
+      display-name: SecureSKYE System
+    protocol: smtp
+    test-connection: false
+
+security:
+  oauth2:
+    secureskye:
+      client:
+        access-token-uri: http://saa/saa/oauth/token
+        client-id: secureskye-notification-service
+        client-secret: secureskye-service
+        scope: none
+        added-info: jwt
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,metrics,prometheus
+  health:
+    mail:
+      enabled: false
+
+---
+spring:
+  profiles: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/secureskye
+  data:
+    mongodb:
+      host: localhost
+  cloud:
+    consul:
+      host: localhost
+
+server:
+  port: 8083
+
+---
+spring:
+  profiles: debug
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+---
+spring:
+  profiles: docker
+  datasource:
+    url: jdbc:postgresql://postgres:5432/secureskye
+  data:
+    mongodb:
+      # Disable sharding for now
+      #host: mongodb-router-1,mongodb-router-2
+      host: mongodb
+  cloud:
+    consul:
+      host: discovery
+      discovery:
+          instance-id: ${spring.application.name}:${HOSTNAME}
+          prefer-ip-address: true
+
+server:
+  undertow:
+    accesslog:
+      enabled: true
+      dir: /var/log
+
+logging:
+  path: /var/log
+  level:
+    root: WARN
+    jp.co.trillium.*: INFO
+
+---
+spring:
+  profiles: docker-local
+  data:
+    mongodb:
+      host: mongodb

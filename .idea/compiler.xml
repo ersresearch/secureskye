@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="common-api_main" target="1.8" />
+      <module name="common-api_test" target="1.8" />
+      <module name="common-mongodb_main" target="1.8" />
+      <module name="common-mongodb_test" target="1.8" />
+      <module name="common_main" target="1.8" />
+      <module name="common_test" target="1.8" />
+      <module name="ie-main-api_main" target="1.8" />
+      <module name="ie-main-api_test" target="1.8" />
+      <module name="ie-main_main" target="1.8" />
+      <module name="ie-main_test" target="1.8" />
+      <module name="ixs-main-api_main" target="1.8" />
+      <module name="ixs-main-api_test" target="1.8" />
+      <module name="ixs-main_main" target="1.8" />
+      <module name="ixs-main_test" target="1.8" />
+      <module name="licensing-main-api_main" target="1.8" />
+      <module name="licensing-main-api_test" target="1.8" />
+      <module name="licensing-main_main" target="1.8" />
+      <module name="licensing-main_test" target="1.8" />
+      <module name="mongodb-init_main" target="1.8" />
+      <module name="mongodb-init_test" target="1.8" />
+      <module name="notification-main-api_main" target="1.8" />
+      <module name="notification-main-api_test" target="1.8" />
+      <module name="notification-main_main" target="1.8" />
+      <module name="notification-main_test" target="1.8" />
+      <module name="oauth-api_main" target="1.8" />
+      <module name="oauth-api_test" target="1.8" />
+      <module name="oauth-common_main" target="1.8" />
+      <module name="oauth-common_test" target="1.8" />
+      <module name="oauth-saa_main" target="1.8" />
+      <module name="oauth-saa_test" target="1.8" />
+      <module name="oauth-uaa_main" target="1.8" />
+      <module name="oauth-uaa_test" target="1.8" />
+      <module name="obd2device-admin-api_main" target="1.8" />
+      <module name="obd2device-admin-api_test" target="1.8" />
+      <module name="obd2device-admin_main" target="1.8" />
+      <module name="obd2device-admin_test" target="1.8" />
+      <module name="obd2device-event-api_main" target="1.8" />
+      <module name="obd2device-event-api_test" target="1.8" />
+      <module name="obd2device-event_main" target="1.8" />
+      <module name="obd2device-event_test" target="1.8" />
+      <module name="ota-vehicle-api_main" target="1.8" />
+      <module name="ota-vehicle-api_test" target="1.8" />
+      <module name="ota-vehicle_main" target="1.8" />
+      <module name="ota-vehicle_test" target="1.8" />
+      <module name="postgres-init_main" target="1.8" />
+      <module name="postgres-init_test" target="1.8" />
+      <module name="secureskye_buildSrc_main" target="1.8" />
+      <module name="secureskye_buildSrc_test" target="1.8" />
+      <module name="user-admin-api_main" target="1.8" />
+      <module name="user-admin-api_test" target="1.8" />
+      <module name="user-admin_main" target="1.8" />
+      <module name="user-admin_test" target="1.8" />
+      <module name="user-settings-api_main" target="1.8" />
+      <module name="user-settings-api_test" target="1.8" />
+      <module name="user-settings_main" target="1.8" />
+      <module name="user-settings_test" target="1.8" />
+      <module name="vehicle-admin-api_main" target="1.8" />
+      <module name="vehicle-admin-api_test" target="1.8" />
+      <module name="vehicle-admin_main" target="1.8" />
+      <module name="vehicle-admin_test" target="1.8" />
+      <module name="vehicle-message-api_main" target="1.8" />
+      <module name="vehicle-message-api_test" target="1.8" />
+      <module name="vehicle-message_main" target="1.8" />
+      <module name="vehicle-message_test" target="1.8" />
+      <module name="vehicle-registry-api_main" target="1.8" />
+      <module name="vehicle-registry-api_test" target="1.8" />
+      <module name="vehicle-registry_main" target="1.8" />
+      <module name="vehicle-registry_test" target="1.8" />
+      <module name="websocket-client-api_main" target="1.8" />
+      <module name="websocket-client-api_test" target="1.8" />
+      <module name="websocket-client_main" target="1.8" />
+      <module name="websocket-client_test" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package ota.vehicle;
+
+option java_multiple_files = true;
+option java_package = "jp.co.trillium.secureskye.ota.vehicle.api.proto";
+option java_outer_classname = "Proto";
+
+message MetadataProto {
+    string id = 1;
+    string name = 2;
+    string category = 3;
+    string family = 4;
+    string status = 5;
+    int64 date = 6;
+    repeated EcuProto ecus = 7;
+}
+
+message MetadataListProto {
+    repeated MetadataProto data = 1;
+}
+
+message EcuProto {
+    string id = 1;
+    string description = 2;
+    repeated ImageProto items = 3;
+}
+
+message ImageProto {
+    string id = 1;
+    string name = 2;
+    string checksum = 3;
+    string software_id = 4;
+    string version_name = 5;
+    uint64 version_code = 6;
+    string changelog = 7;
+    string url = 8;
+}
+
+message ImageArchiveStatisticsProto {
+    int64 image_archive_count = 1;
+}

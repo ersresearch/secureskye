@@ -1,0 +1,59 @@
+<div class="animated fadeIn">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-5">
+              <h3 class="card-title clearfix">Vehicles</h3>
+            </div>
+            <div class="col-7 text-right">
+              <a class="btn btn-primary" [routerLink]="['register']">
+                <i class="fa fa-car"></i>&nbsp;Register</a>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12">
+              <div class="table-responsive-sm">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th class="vehicle-name">Name</th>
+                      <th class="vehicle-model">Model</th>
+                      <th class="vehicle-operation"></th>
+                    </tr>
+                  </thead>
+                  <tbody *ngIf="items">
+                    <tr *ngFor="let item of items.data | slice : (vehicleListPageNo-1)*itemsPerPage : vehicleListPageNo*itemsPerPage">
+                      <td class="vehicle-name">{{ item.name }}</td>
+                      <td class="vehicle-model">{{ item.modelName }}</td>
+                      <td class="vehicle-operation text-right">
+                        <div class="btn-group" dropdown container="body" placement="bottom right">
+                          <a class="btn btn-secondary" [routerLink]="[item.id]">
+                            View</a>
+                          <a class="btn btn-secondary dropdown-toggle dropdown-toggle-split" dropdownToggle>
+                          </a>
+                          <ul *dropdownMenu class="dropdown-menu dropdown-menu-right" role="menu">
+                            <li role="menuitem">
+                              <a class="dropdown-item" [routerLink]="[item.id, 'monitoring']">
+                                <i class="fa fa-tachometer"></i>&nbsp;Monitor</a>
+                            </li>
+                            <li role="menuitem">
+                              <a class="dropdown-item" [routerLink]="[item.id, 'route']">
+                                <i class="fa fa-location-arrow"></i>&nbsp;GPS History</a>
+                            </li>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <pagination *ngIf="items" [totalItems]="items.data.length" [(ngModel)]="vehicleListPageNo" [maxSize]="6" [itemsPerPage]="itemsPerPage"></pagination>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

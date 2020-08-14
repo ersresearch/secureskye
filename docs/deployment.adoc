@@ -1,0 +1,178 @@
+= SecureSKYE backup & restore
+
+== Prerequisites
+
+. Install the https://cloud.google.com/sdk/gcloud[Google Cloud Tools].
+. Install the https://kubernetes.io/docs/tasks/tools/install-kubectl[Kubectl Tools].
+
+. Install the tools `pg_dump`, `pg_restore`, `mongodump`, `mongorestore`.
++
+.. Ubuntu / Debian based OS
++
+[source,shell]
+----
+sudo apt install postgresql-client mongo-tools
+----
+
+.. Windows
+... Downlaod and install https://www.postgresql.org/download/windows[PostgreSQL].
+* Choose the EnterpriseDB installer.
+* Only select the *Command Line Tools* during component selection.
+* Add the PostgreSQL `bin` folder to your PATH variable. The default is `C:\Program Files\PostgreSQL\11\bin`.
+... Download and install https://www.mongodb.com/download-center/community[MongoDB].
+* Choose *Custom* install type.
+* Only select the *Import/Export Tools* during component selection.
+* Unselect *Install MongoD as a Service*.
+* Unselect *Install MongoDB Compass.
+* Add the MongoDB `bin` folder to your PATH variable. The default is `C:\Program Files\MongoDB\Server\4.0\bin`.
+
+. Make sure all your docker images were built successfully with `./gradlew buildDocker` (or `gradlew buildDocker`
+for Windows).
+
+
+[[connect]]
+== Connect to Kubernetes pods
+
+. Setup `kubectl` credentials through the `gcloud` tools:
++
+[source,shell]
+----
+gcloud container clusters get-credentials <cluster-name> --project <project-name>
+----
+
+. List all pods to identify the `mongodb` and `postgres` pod IDs:
++
+[source,shell]
+----
+kubectl get pods
+----
+Example output:
++
+[source,shell]
+----
+NAME                      READY   STATUS    RESTARTS   AGE
+discovery-8vjgf           1/1     Running   0          7d
+gateway-wx6v4             1/1     Running   0          7d
+grafana-f6vht             1/1     Running   0          7d
+ie-main-frp6w             1/1     Running   2          7d
+ixs-main-5ffc6            1/1     Running   1          7d
+licensing-main-wv76z      1/1     Running   0          7d
+mongodb-qkjmg             1/1     Running   0          7d
+notification-main-298xz   1/1     Running   3          7d
+oauth-saa-p5b97           1/1     Running   2          7d
+oauth-uaa-zgnls           1/1     Running   4          7d
+ota-vehicle-zx9k5         1/1     Running   1          7d
+postgres-4rmxx            1/1     Running   0          7d
+prometheus-6sl9f          1/1     Running   0          7d
+ui-mcgk5                  1/1     Running   0          7d
+user-admin-dnwp5          1/1     Running   0          7d
+vehicle-admin-wljfr       1/1     Running   2          7d
+vehicle-message-jtw8k     1/1     Running   1          7d
+vehicle-registry-7zsss    1/1     Running   4          7d
+----
+
+. Port forward the `postgres` pod:
++
+[source,shell]
+----
+kubectl port-forward <pod-name> 12345:5432
+----
+.Example output
++
+[source,shell]
+----
+Forwarding from 127.0.0.1:12345 -> 5432
+Forwarding from [::1]:12345 -> 5432
+----
+
+. Port forward the `mongodb` pod:
++
+[source,shell]
+----
+kubectl port-forward <pod-name> 12346:27017
+----
+.Example output
++
+[source,shell]
+----
+Forwarding from 127.0.0.1:12346 -> 27017
+Forwarding from [::1]:12346 -> 27017
+----
+
+== Backup
+
+. First follow the instructions to <<connect>>.
+. Backup the PostgreSQL database with `pg_dump`:
++
+[source,shell]
+----
+pg_dump \
+  --host=localhost \
+  --port=12345 \
+  --username=postgres \
+  --format=custom \
+  secureskye \
+  > $(date +%Y%m%d)_postgresql.backup
+----
+
+. Backup the MongoDB database with `mongodump`:
++
+[source,shell]
+----
+mongodump \
+  --host=localhost \
+  --port=12346 \
+  --username=mongodb \
+  --password=mongodb \
+  --gzip \
+  --archive=$(date +%Y%m%d)_mongodb.backup
+----
+
+== Recreate the cluster
+
+. Move into the terraform folder.
+. Execute the `publish-images-ces.sh` (or `publish-images.sh` in case of the Trillium demo cluster) script to upload
+all docker images to the GCP registry.
+. Destroy the current cluster:
++
+[source,shell]
+----
+terraform destroy -var-file=terraform.tfvars -var-file=secret.tfvars -var-file=ces.tfvars -state=terraform-ces.tfstate
+----
+NOTE: The arguments `-var-file=ces.tfvars` and `-state=terraform-ces.tfstate` are only required when deploying to the
+CES event cluster. For the Trillium demo cluster these need to be omitted.
+
+. Create a new cluster by running the `apply-ces.sh` (or `apply.sh` for the Trillium demo cluster) script.
+. Wait until all services are deployed and running.
+
+== Restore
+
+. First follow the instructions to <<connect>>.
++
+IMPORTANT: Because the cluster was recreated, you also have to setup `kubectl` through `gcloud` again.
+. Restore the PostgreSQL database with `pg_restore`:
++
+[source,shell]
+----
+pg_restore \
+  --host=localhost \
+  --port=12345 \
+  --dbname=secureskye \
+  --username=postgres \
+  --clean \
+  <filename>
+----
+
+. Restore the MongoDB database with `mongorestore`:
++
+[source,shell]
+----
+mongorestore \
+  --host=localhost \
+  --port=12346 \
+  --username=mongodb \
+  --password=mongodb \
+  --gzip \
+  --drop \
+  --archive=<filename>
+----
